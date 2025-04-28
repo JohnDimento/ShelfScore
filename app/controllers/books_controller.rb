@@ -17,17 +17,12 @@ class BooksController < ApplicationController
     end
 
     begin
-      @quiz = @book.quizzes.first || QuizGenerator.new(@book).generate_quiz
-
-      if @quiz.questions.empty?
-        flash[:error] = "Failed to generate quiz questions. Please try again."
-      else
-        flash[:notice] = "Quiz generated successfully!"
-      end
+      generator = QuizGenerator.new(@book)
+      @quiz = generator.generate_quiz!
+      redirect_to take_book_quiz_path(@book, @quiz)
     rescue StandardError => e
-      flash[:error] = "An error occurred while generating the quiz: #{e.message}"
+      flash[:error] = "Failed to generate quiz questions. Please try again."
+      redirect_to book_path(@book)
     end
-
-    redirect_to book_path(@book)
   end
 end

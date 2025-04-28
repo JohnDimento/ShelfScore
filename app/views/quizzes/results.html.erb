@@ -1,0 +1,56 @@
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-[1200px] mx-auto px-4 py-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold mb-2"><%= @quiz.title %> - Results</h1>
+      <div class="flex items-center space-x-4">
+        <p class="text-xl">Score: <%= @correct_answers %> out of <%= @total_questions %> (<%= @score_percentage %>%)</p>
+        <%= link_to "Back to Book", book_path(@book), class: "text-blue-600 hover:text-blue-800" %>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md">
+      <div class="p-6">
+        <% @results.each_with_index do |result, index| %>
+          <div class="mb-8 last:mb-0">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl">Question <%= index + 1 %></h3>
+              <span class="text-gray-600">1 point</span>
+            </div>
+            <div class="border-b border-gray-200 mb-4"></div>
+
+            <p class="text-lg mb-6"><%= result[:question].content %></p>
+
+            <div class="space-y-4">
+              <% result[:question].options.each_with_index do |option, option_index| %>
+                <% letter = ('A'.ord + option_index).chr %>
+                <div class="flex items-start p-4 rounded-lg
+                  <%= if letter == result[:correct_answer]
+                        'bg-green-50 border-2 border-green-500'
+                      elsif letter == result[:user_answer] && !result[:is_correct]
+                        'bg-red-50 border-2 border-red-500'
+                      end %>">
+                  <div class="flex items-center h-5">
+                    <div class="w-5 h-5 border border-gray-300 rounded-full flex items-center justify-center
+                      <%= letter == result[:user_answer] ? 'bg-gray-200' : 'bg-white' %>">
+                      <%= '●' if letter == result[:user_answer] %>
+                    </div>
+                  </div>
+                  <div class="ml-3 flex-grow">
+                    <span class="text-lg">
+                      <%= letter %>. <%= option %>
+                    </span>
+                    <% if letter == result[:correct_answer] %>
+                      <span class="ml-2 text-green-600">(Correct Answer)</span>
+                    <% elsif letter == result[:user_answer] && !result[:is_correct] %>
+                      <span class="ml-2 text-red-600">(Your Answer)</span>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

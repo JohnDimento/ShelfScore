@@ -47,26 +47,67 @@
         </div>
 
         <div class="ml-6 flex-shrink-0">
-          <%= button_to take_quiz_book_path(book), method: :post,
-            class: "inline-flex items-center space-x-2 whitespace-nowrap
-                   px-4 py-2 bg-slate-800 hover:bg-slate-700
-                   text-white rounded-lg transition-colors" do %>
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span><%= book.quizzes.any? ? 'Retake Quiz' : 'Take Quiz' %></span>
+          <% if book.quizzes.any? %>
+            <% quiz = book.quizzes.first %>
+            <% if quiz.questions.any? %>
+              <%= link_to take_book_quiz_path(book, quiz),
+                class: "inline-flex items-center space-x-2 whitespace-nowrap
+                       px-4 py-2 bg-slate-800 hover:bg-slate-700
+                       text-white rounded-lg transition-colors" do %>
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>Take Quiz</span>
+              <% end %>
+            <% else %>
+              <div class="space-y-2">
+                <%= button_to "Generate Questions", book_quizzes_path(book),
+                  method: :post,
+                  class: "inline-flex items-center space-x-2 whitespace-nowrap
+                         px-4 py-2 bg-slate-800 hover:bg-slate-700
+                         text-white rounded-lg transition-colors" %>
+                <% if flash[:notice] && flash[:notice].include?("successfully") %>
+                  <%= link_to take_book_quiz_path(book, quiz),
+                    class: "inline-flex items-center space-x-2 whitespace-nowrap
+                           px-4 py-2 bg-slate-800 hover:bg-slate-700
+                           text-white rounded-lg transition-colors" do %>
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>Take Quiz</span>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+          <% else %>
+            <%= button_to "Generate Quiz", book_quizzes_path(book),
+              method: :post,
+              class: "inline-flex items-center space-x-2 whitespace-nowrap
+                     px-4 py-2 bg-slate-800 hover:bg-slate-700
+                     text-white rounded-lg transition-colors" %>
           <% end %>
         </div>
       </div>
     </div>
   <% end %>
+</div>

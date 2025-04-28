@@ -6,11 +6,12 @@ class QuizGenerator
   end
 
   # returns a Quiz or raises if no questions
-  def generate_quiz!
+  # if quiz is provided, adds questions to that quiz instead of creating a new one
+  def generate_quiz!(quiz = nil)
     questions = fetch_questions!
     raise "No questions returned from OpenAI" if questions.empty?
 
-    quiz = @book.quizzes.create!(title: "Quiz for #{@book.title}")
+    quiz ||= @book.quizzes.create!(title: "Quiz for #{@book.title}")
     questions.each do |q|
       quiz.questions.create!(
         content:        q.fetch("content"),

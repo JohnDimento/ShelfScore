@@ -1,13 +1,20 @@
 Rails.application.routes.draw do
   root 'home#index'
-  get "/search", to: "home#search", as: :search
 
-  resources :books, only: [:index, :show] do
-    member do
-      post :take_quiz
+  resources :books do
+    resources :quizzes, only: [:create] do
+      member do
+        get :take
+        post :submit
+      end
     end
-    resources :quizzes, only: [:create]
   end
+
+  resources :quizzes, only: [:show]
+
+  get 'search', to: 'home#search'
+
+  post 'quiz_answers', to: 'quiz_answers#create'
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
