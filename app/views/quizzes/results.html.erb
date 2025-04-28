@@ -36,14 +36,22 @@
                     </div>
                   </div>
                   <div class="ml-3 flex-grow">
-                    <span class="text-lg">
-                      <%= letter %>. <%= option %>
-                    </span>
-                    <% if letter == result[:correct_answer] %>
-                      <span class="ml-2 text-green-600">(Correct Answer)</span>
-                    <% elsif letter == result[:user_answer] && !result[:is_correct] %>
-                      <span class="ml-2 text-red-600">(Your Answer)</span>
-                    <% end %>
+                    <div class="flex items-center">
+                      <span class="text-lg font-medium <%= if letter == result[:correct_answer]
+                                                'text-green-600 !important'
+                                              elsif letter == result[:user_answer] && !result[:is_correct]
+                                                'text-red-600 !important'
+                                              else
+                                                'text-gray-700'
+                                              end %>">
+                        <%= letter %>. <%= option %>
+                      </span>
+                      <% if letter == result[:correct_answer] %>
+                        <span class="ml-2 text-green-600 font-medium">(Correct Answer)</span>
+                      <% elsif letter == result[:user_answer] && !result[:is_correct] %>
+                        <span class="ml-2 text-red-600 font-medium">(Your Answer)</span>
+                      <% end %>
+                    </div>
                   </div>
                 </div>
               <% end %>

@@ -89,3 +89,5 @@ group :test do
   gem "shoulda-matchers"
   gem "rails-controller-testing"
 end
+
+gem 'google-apis-books_v1', '~> 0.18.0'

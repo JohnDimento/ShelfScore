@@ -11,7 +11,7 @@
     <div class="flex gap-6 justify-between">
       <!-- Main Quiz Content -->
       <div class="flex-1 bg-white rounded-lg shadow-md min-h-[calc(100vh-16rem)]">
-        <%= form_tag take_book_quiz_path(@book, @quiz), method: :get, id: "quiz-form", class: "h-full flex flex-col", data: { turbo: false } do %>
+        <%= form_tag submit_book_quiz_path(@book, @quiz), method: :post, id: "quiz-form", class: "h-full flex flex-col", data: { turbo: false } do %>
           <% current_question = @quiz.questions[@current_question] %>
           <%= hidden_field_tag :last_question, @current_question %>
           <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
@@ -57,20 +57,22 @@
                     name: "question",
                     value: @current_question - 1,
                     type: "submit",
+                    formaction: take_book_quiz_path(@book, @quiz),
+                    formmethod: :get,
                     class: "inline-block px-4 py-1 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none whitespace-nowrap" %>
               <% end %>
 
               <% if @current_question == @question_count - 1 %>
                 <%= button_tag "Submit Quiz",
-                    formaction: submit_book_quiz_path(@book, @quiz),
-                    formmethod: :post,
-                    data: { turbo: false },
+                    type: "submit",
                     class: "inline-block px-4 py-1 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none whitespace-nowrap" %>
               <% else %>
                 <%= button_tag "Next",
                     name: "question",
                     value: @current_question + 1,
                     type: "submit",
+                    formaction: take_book_quiz_path(@book, @quiz),
+                    formmethod: :get,
                     class: "inline-block px-4 py-1 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none whitespace-nowrap" %>
               <% end %>
             </div>
@@ -87,6 +89,8 @@
                     name="question"
                     value="<%= index %>"
                     type="submit"
+                    formaction="<%= take_book_quiz_path(@book, @quiz) %>"
+                    formmethod="get"
                     class="w-full flex items-center p-2 rounded-lg <%= index == @current_question ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50' %>">
               <span class="flex items-center justify-center w-full">
                 <span class="w-6 h-6 flex items-center justify-center rounded-full

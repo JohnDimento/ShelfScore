@@ -1,111 +1,63 @@
 <div class="space-y-6">
   <% @books.each do |book| %>
     <div class="bg-white rounded-xl border border-slate-200 p-6">
-      <div class="flex justify-between items-start">
-        <div class="flex-grow">
-          <h2 class="text-xl font-semibold text-slate-800 mb-1">
-            <%= book.title %>
-          </h2>
-          <p class="text-slate-600 mb-2">
-            by <%= book.author %>
-          </p>
-          <% if book.series.present? %>
-            <p class="text-sm text-slate-500 mb-4">
-              Series: <%= book.series %>
-            </p>
-          <% end %>
-          <p class="text-slate-700">
-            <%= book.description %>
-          </p>
-          <p class="text-sm text-slate-500 mt-4">
-            Published <%= book.published_year %>
-          </p>
-
-          <% if book.quizzes.any? %>
-            <div class="mt-6 border-t border-slate-200 pt-6">
-              <h3 class="text-lg font-semibold text-slate-800 mb-4">Quiz Questions</h3>
-              <div class="space-y-4">
-                <% book.quizzes.first.questions.each_with_index do |question, index| %>
-                  <div class="bg-slate-50 rounded-lg p-4">
-                    <p class="font-medium text-slate-800 mb-3">
-                      <%= index + 1 %>. <%= question.content %>
-                    </p>
-                    <div class="space-y-2 ml-4">
-                      <% question.options.each_with_index do |option, option_index| %>
-                        <div class="flex items-center">
-                          <span class="text-slate-600">
-                            <%= ('A'.ord + option_index).chr %>. <%= option %>
-                          </span>
-                        </div>
-                      <% end %>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
+      <div class="flex gap-8">
+        <div class="flex-shrink-0 w-32">
+          <% if book.thumbnail_url %>
+            <%= image_tag book.thumbnail_url, class: "w-full rounded-lg shadow-sm", alt: "Cover of #{book.title}" %>
+          <% else %>
+            <div class="w-full h-48 bg-slate-100 rounded-lg flex items-center justify-center">
+              <span class="text-slate-400 text-sm">No cover</span>
             </div>
           <% end %>
         </div>
 
-        <div class="ml-6 flex-shrink-0">
-          <% if book.quizzes.any? %>
-            <% quiz = book.quizzes.first %>
-            <% if quiz.questions.any? %>
-              <%= link_to take_book_quiz_path(book, quiz),
-                class: "inline-flex items-center space-x-2 whitespace-nowrap
-                       px-4 py-2 bg-slate-800 hover:bg-slate-700
-                       text-white rounded-lg transition-colors" do %>
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span>Take Quiz</span>
+        <div class="flex-grow min-w-0">
+          <div class="flex justify-between items-start mb-4">
+            <div class="min-w-0 pr-4">
+              <h2 class="text-xl font-semibold text-slate-800 truncate">
+                <%= book.title %>
+              </h2>
+              <p class="text-slate-600 mt-1">
+                by <%= book.author %>
+              </p>
+              <% if book.series.present? %>
+                <p class="text-sm text-slate-500 mt-1">
+                  Series: <%= book.series %>
+                </p>
               <% end %>
-            <% else %>
-              <div class="space-y-2">
-                <%= button_to "Generate Questions", book_quizzes_path(book),
-                  method: :post,
-                  class: "inline-flex items-center space-x-2 whitespace-nowrap
-                         px-4 py-2 bg-slate-800 hover:bg-slate-700
-                         text-white rounded-lg transition-colors" %>
-                <% if flash[:notice] && flash[:notice].include?("successfully") %>
-                  <%= link_to take_book_quiz_path(book, quiz),
-                    class: "inline-flex items-center space-x-2 whitespace-nowrap
-                           px-4 py-2 bg-slate-800 hover:bg-slate-700
-                           text-white rounded-lg transition-colors" do %>
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <span>Take Quiz</span>
-                  <% end %>
+            </div>
+
+            <div class="flex-shrink-0">
+              <% quiz = book.quizzes.first %>
+              <% if quiz&.questions&.any? %>
+                <%= link_to take_book_quiz_path(book, quiz),
+                  class: "inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors" do %>
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Take Quiz</span>
                 <% end %>
-              </div>
+              <% else %>
+                <%= button_to book_quizzes_path(book),
+                  method: :post,
+                  class: "inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors" do %>
+                  <span>Generate Quiz</span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="min-w-0">
+            <p class="text-slate-700 mb-4 line-clamp-3">
+              <%= truncate(book.description, length: 200, separator: ' ') %>
+            </p>
+            <% if book.published_year.present? %>
+              <p class="text-sm text-slate-500">
+                Published <%= book.published_year %>
+              </p>
             <% end %>
-          <% else %>
-            <%= button_to "Generate Quiz", book_quizzes_path(book),
-              method: :post,
-              class: "inline-flex items-center space-x-2 whitespace-nowrap
-                     px-4 py-2 bg-slate-800 hover:bg-slate-700
-                     text-white rounded-lg transition-colors" %>
-          <% end %>
+          </div>
         </div>
       </div>
     </div>

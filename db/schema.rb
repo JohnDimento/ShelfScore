@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_28_101738) do
+ActiveRecord::Schema[7.1].define(version: 2025_04_29_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -22,6 +22,18 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_28_101738) do
     t.integer "published_year"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "google_books_id"
+    t.string "isbn_13"
+    t.string "isbn_10"
+    t.integer "page_count"
+    t.string "categories", default: [], array: true
+    t.decimal "average_rating", precision: 3, scale: 2
+    t.integer "ratings_count"
+    t.string "thumbnail_url"
+    t.string "preview_link"
+    t.index ["google_books_id"], name: "index_books_on_google_books_id", unique: true
+    t.index ["isbn_10"], name: "index_books_on_isbn_10"
+    t.index ["isbn_13"], name: "index_books_on_isbn_13"
   end
 
   create_table "questions", force: :cascade do |t|
