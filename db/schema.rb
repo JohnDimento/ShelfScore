@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_28_092528) do
+ActiveRecord::Schema[7.1].define(version: 2025_04_28_101738) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -24,6 +24,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_28_092528) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "questions", force: :cascade do |t|
+    t.text "content"
+    t.jsonb "options"
+    t.string "correct_answer"
+    t.bigint "quiz_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["quiz_id"], name: "index_questions_on_quiz_id"
+  end
+
   create_table "quizzes", force: :cascade do |t|
     t.bigint "book_id", null: false
     t.string "title"
@@ -33,5 +43,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_28_092528) do
     t.index ["book_id"], name: "index_quizzes_on_book_id"
   end
 
+  add_foreign_key "questions", "quizzes"
   add_foreign_key "quizzes", "books"
 end

@@ -58,3 +58,42 @@ percy_jackson_books.each do |book_data|
     difficulty: "Medium"
   )
 end
+
+# Clear existing data
+Book.destroy_all
+
+# Create sample books
+books = [
+  {
+    title: "To Kill a Mockingbird",
+    author: "Harper Lee",
+    series: nil,
+    description: "The story of racial injustice and the loss of innocence in the American South.",
+    published_year: 1960
+  },
+  {
+    title: "1984",
+    author: "George Orwell",
+    series: nil,
+    description: "A dystopian social science fiction novel and cautionary tale.",
+    published_year: 1949
+  },
+  {
+    title: "The Great Gatsby",
+    author: "F. Scott Fitzgerald",
+    series: nil,
+    description: "A story of the fabulously wealthy Jay Gatsby and his love for the beautiful Daisy Buchanan.",
+    published_year: 1925
+  }
+]
+
+books.each do |book_attrs|
+  book = Book.create!(book_attrs)
+  puts "Created book: #{book.title}"
+
+  # Generate a quiz for each book
+  quiz = QuizGenerator.new(book).generate_quiz
+  puts "Generated quiz for: #{book.title}"
+end
+
+puts "Seeding completed!"

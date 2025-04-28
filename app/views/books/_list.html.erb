@@ -20,15 +20,37 @@
           <p class="text-sm text-slate-500 mt-4">
             Published <%= book.published_year %>
           </p>
+
+          <% if book.quizzes.any? %>
+            <div class="mt-6 border-t border-slate-200 pt-6">
+              <h3 class="text-lg font-semibold text-slate-800 mb-4">Quiz Questions</h3>
+              <div class="space-y-4">
+                <% book.quizzes.first.questions.each_with_index do |question, index| %>
+                  <div class="bg-slate-50 rounded-lg p-4">
+                    <p class="font-medium text-slate-800 mb-3">
+                      <%= index + 1 %>. <%= question.content %>
+                    </p>
+                    <div class="space-y-2 ml-4">
+                      <% question.options.each_with_index do |option, option_index| %>
+                        <div class="flex items-center">
+                          <span class="text-slate-600">
+                            <%= ('A'.ord + option_index).chr %>. <%= option %>
+                          </span>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
         </div>
 
         <div class="ml-6 flex-shrink-0">
-          <a
-            href="#"
-            class="inline-flex items-center space-x-2 whitespace-nowrap
+          <%= button_to take_quiz_book_path(book), method: :post,
+            class: "inline-flex items-center space-x-2 whitespace-nowrap
                    px-4 py-2 bg-slate-800 hover:bg-slate-700
-                   text-white rounded-lg transition-colors"
-          >
+                   text-white rounded-lg transition-colors" do %>
             <svg
               class="w-5 h-5"
               fill="none"
@@ -42,8 +64,8 @@
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>Take Quiz</span>
-          </a>
+            <span><%= book.quizzes.any? ? 'Retake Quiz' : 'Take Quiz' %></span>
+          <% end %>
         </div>
       </div>
     </div>

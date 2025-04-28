@@ -3,7 +3,12 @@ class HomeController < ApplicationController
   end
 
   def search
-    @books = Book.search(params[:title], params[:author])
+    # Build the search query based on available parameters
+    query = []
+    query << params[:title] if params[:title].present?
+    query << params[:author] if params[:author].present?
+
+    @books = Book.includes(quizzes: :questions).search(query.join(' '))
     render :search
   end
 end
