@@ -1,0 +1,50 @@
+<div class="space-y-6">
+  <% @books.each do |book| %>
+    <div class="bg-white rounded-xl border border-slate-200 p-6">
+      <div class="flex justify-between items-start">
+        <div class="flex-grow">
+          <h2 class="text-xl font-semibold text-slate-800 mb-1">
+            <%= book.title %>
+          </h2>
+          <p class="text-slate-600 mb-2">
+            by <%= book.author %>
+          </p>
+          <% if book.series.present? %>
+            <p class="text-sm text-slate-500 mb-4">
+              Series: <%= book.series %>
+            </p>
+          <% end %>
+          <p class="text-slate-700">
+            <%= book.description %>
+          </p>
+          <p class="text-sm text-slate-500 mt-4">
+            Published <%= book.published_year %>
+          </p>
+        </div>
+
+        <div class="ml-6 flex-shrink-0">
+          <a
+            href="#"
+            class="inline-flex items-center space-x-2 whitespace-nowrap
+                   px-4 py-2 bg-slate-800 hover:bg-slate-700
+                   text-white rounded-lg transition-colors"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>Take Quiz</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  <% end %>
