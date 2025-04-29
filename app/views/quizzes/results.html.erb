@@ -11,52 +11,12 @@
     <div class="bg-white rounded-lg shadow-md">
       <div class="p-6">
         <% @results.each_with_index do |result, index| %>
-          <div class="mb-8 last:mb-0">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xl">Question <%= index + 1 %></h3>
-              <span class="text-gray-600">1 point</span>
-            </div>
-            <div class="border-b border-gray-200 mb-4"></div>
-
-            <p class="text-lg mb-6"><%= result[:question].content %></p>
-
-            <div class="space-y-4">
-              <% result[:question].options.each_with_index do |option, option_index| %>
-                <% letter = ('A'.ord + option_index).chr %>
-                <div class="flex items-start p-4 rounded-lg
-                  <%= if letter == result[:correct_answer]
-                        'bg-green-50 border-2 border-green-500'
-                      elsif letter == result[:user_answer] && !result[:is_correct]
-                        'bg-red-50 border-2 border-red-500'
-                      end %>">
-                  <div class="flex items-center h-5">
-                    <div class="w-5 h-5 border border-gray-300 rounded-full flex items-center justify-center
-                      <%= letter == result[:user_answer] ? 'bg-gray-200' : 'bg-white' %>">
-                      <%= '●' if letter == result[:user_answer] %>
-                    </div>
-                  </div>
-                  <div class="ml-3 flex-grow">
-                    <div class="flex items-center">
-                      <span class="text-lg font-medium <%= if letter == result[:correct_answer]
-                                                'text-green-600 !important'
-                                              elsif letter == result[:user_answer] && !result[:is_correct]
-                                                'text-red-600 !important'
-                                              else
-                                                'text-gray-700'
-                                              end %>">
-                        <%= letter %>. <%= option %>
-                      </span>
-                      <% if letter == result[:correct_answer] %>
-                        <span class="ml-2 text-green-600 font-medium">(Correct Answer)</span>
-                      <% elsif letter == result[:user_answer] && !result[:is_correct] %>
-                        <span class="ml-2 text-red-600 font-medium">(Your Answer)</span>
-                      <% end %>
-                    </div>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          </div>
+          <%= render "quizzes/components/result_question",
+                    question: result[:question],
+                    question_number: index + 1,
+                    correct_answer: result[:correct_answer],
+                    user_answer: result[:user_answer],
+                    is_correct: result[:is_correct] %>
         <% end %>
       </div>
     </div>

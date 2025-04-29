@@ -55,15 +55,14 @@ RSpec.describe BooksController, type: :controller do
 
     context 'when quiz does not exist' do
       let(:quiz) { instance_double(Quiz) }
-      let(:quiz_generator) { instance_double(QuizGenerator) }
+      let(:quiz_generator_double) { instance_double(Quizzes::GeneratorService, generate_quiz: quiz) }
 
       before do
-        allow(QuizGenerator).to receive(:new).with(book).and_return(quiz_generator)
-        allow(quiz_generator).to receive(:generate_quiz).and_return(quiz)
+        allow(Quizzes::GeneratorService).to receive(:new).with(book).and_return(quiz_generator_double)
       end
 
       it 'generates a new quiz' do
-        expect(quiz_generator).to receive(:generate_quiz)
+        expect(quiz_generator_double).to receive(:generate_quiz)
         post :take_quiz, params: { id: book.id }
       end
 

@@ -1,7 +1,7 @@
 namespace :books do
   desc 'Import books from Google Books API'
   task import: :environment do
-    service = GoogleBooksService.new
+    service = Books::GoogleBooksService.new
 
     # Break queries into smaller batches
     query_batches = [
@@ -65,7 +65,7 @@ namespace :books do
 
   desc 'Clean HTML tags from existing book descriptions'
   task clean_descriptions: :environment do
-    service = GoogleBooksService.new
+    service = Books::GoogleBooksService.new
     total = Book.count
     cleaned = 0
 

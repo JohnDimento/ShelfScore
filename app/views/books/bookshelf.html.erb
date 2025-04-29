@@ -17,7 +17,7 @@
                 <div class="w-[152px] flex justify-center">
                   <% book = @books[row * 3 + slot] %>
                   <% if book %>
-                    <%= render "books/shelf_book", book: book %>
+                    <%= render "books/bookshelf/book", book: book %>
                   <% else %>
                     <%# Empty placeholder %>
                     <div class="w-[120px] h-[180px] bg-slate-50 rounded shadow-sm border border-slate-200/50 overflow-hidden relative group">
@@ -40,7 +40,7 @@
         <% end %>
       </div>
     <% else %>
-      <%= render "books/empty_bookshelf" %>
+      <%= render "books/bookshelf/empty_bookshelf" %>
     <% end %>
   </div>
 </div>

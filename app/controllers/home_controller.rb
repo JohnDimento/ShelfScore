@@ -9,6 +9,6 @@ class HomeController < ApplicationController
     query << params[:author] if params[:author].present?
 
     @books = Book.includes(quizzes: :questions).search(query.join(' '))
-    render :search
+    render 'home/search/index'
   end
 end

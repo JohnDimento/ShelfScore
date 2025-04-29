@@ -6,25 +6,27 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%# Stylesheets %>
+    <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <%# JavaScript %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body class="h-full">
-    <%= render "shared/navigation" %>
-    <% if notice %>
-      <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
-        <%= notice %>
-      </div>
-    <% end %>
-    <% if alert %>
-      <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-        <%= alert %>
-      </div>
-    <% end %>
-    <%= yield %>
-    <%= render "shared/footer" %>
+    <%# Navigation %>
+    <%= render "shared/components/navigation" %>
+
+    <%# Flash Messages %>
+    <%= render "shared/flash/messages" %>
+
+    <%# Main Content %>
+    <main>
+      <%= yield %>
+    </main>
+
+    <%# Footer %>
+    <%= render "shared/components/footer" %>
   </body>
 </html>

@@ -4,7 +4,7 @@ class QuizzesController < ApplicationController
   before_action :check_attempt_eligibility, only: [:take]
 
   def create
-    generator = QuizGenerator.new(@book)
+    generator = Quizzes::GeneratorService.new(@book)
 
     begin
       @quiz = generator.generate_quiz!

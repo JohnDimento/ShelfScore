@@ -16,122 +16,25 @@
           <%= hidden_field_tag :last_question, @current_question %>
           <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
 
-          <div class="flex-1">
-            <!-- Question Header -->
-            <div class="px-8 pt-6">
-              <div class="flex justify-between items-center">
-                <span class="text-xl">Question <%= @current_question + 1 %></span>
-                <span class="text-gray-600">1 point</span>
-              </div>
-              <div class="border-b border-gray-200 my-4"></div>
-            </div>
+          <%= render "quizzes/components/question_form",
+                    question: current_question,
+                    current_question_index: @current_question %>
 
-            <!-- Question Content -->
-            <div class="px-8">
-              <p class="text-xl mb-8"><%= current_question.content %></p>
-              <div class="space-y-6">
-                <% current_question.options.each_with_index do |option, option_index| %>
-                  <div class="flex items-start p-4 hover:bg-gray-50 transition-colors duration-150">
-                    <div class="flex items-center h-5">
-                      <%= radio_button_tag "answers[#{current_question.id}]",
-                          ('A'.ord + option_index).chr,
-                          session.dig(:quiz_answers, current_question.id.to_s) == ('A'.ord + option_index).chr,
-                          class: "h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300",
-                          id: "answer_#{current_question.id}_#{('A'.ord + option_index).chr}" %>
-                    </div>
-                    <label for="answer_<%= current_question.id %>_<%= ('A'.ord + option_index).chr %>"
-                           class="ml-3 block text-lg text-gray-700 cursor-pointer flex-grow">
-                      <%= ('A'.ord + option_index).chr %>. <%= option %>
-                    </label>
-                  </div>
-                <% end %>
-              </div>
-            </div>
-          </div>
-
-          <!-- Navigation Buttons -->
-          <div class="px-8 py-6 flex justify-end space-x-2">
-            <div class="inline-flex space-x-2">
-              <% if @current_question > 0 %>
-                <%= button_tag "Previous",
-                    name: "question",
-                    value: @current_question - 1,
-                    type: "submit",
-                    formaction: take_book_quiz_path(@book, @quiz),
-                    formmethod: :get,
-                    class: "inline-block px-4 py-1 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none whitespace-nowrap" %>
-              <% end %>
-
-              <% if @current_question == @question_count - 1 %>
-                <%= button_tag "Submit Quiz",
-                    type: "submit",
-                    class: "inline-block px-4 py-1 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none whitespace-nowrap" %>
-              <% else %>
-                <%= button_tag "Next",
-                    name: "question",
-                    value: @current_question + 1,
-                    type: "submit",
-                    formaction: take_book_quiz_path(@book, @quiz),
-                    formmethod: :get,
-                    class: "inline-block px-4 py-1 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none whitespace-nowrap" %>
-              <% end %>
-            </div>
-          </div>
+          <%= render "quizzes/components/navigation_buttons",
+                    current_question_index: @current_question,
+                    question_count: @question_count,
+                    book: @book,
+                    quiz: @quiz %>
         <% end %>
       </div>
 
       <!-- Question Navigation -->
-      <div class="w-32 bg-white rounded-lg shadow-md p-4">
-        <h3 class="text-lg font-medium pb-3 mb-4 border-b border-gray-200">Questions</h3>
-        <div class="space-y-2">
-          <% @quiz.questions.each_with_index do |question, index| %>
-            <button form="quiz-form"
-                    name="question"
-                    value="<%= index %>"
-                    type="submit"
-                    formaction="<%= take_book_quiz_path(@book, @quiz) %>"
-                    formmethod="get"
-                    class="w-full flex items-center p-2 rounded-lg <%= index == @current_question ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50' %>">
-              <span class="flex items-center justify-center w-full">
-                <span class="w-6 h-6 flex items-center justify-center rounded-full
-                  <%= session.dig(:quiz_answers, question.id.to_s).present? ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' %>">
-                  <%= index + 1 %>
-                </span>
-              </span>
-            </button>
-          <% end %>
-        </div>
-      </div>
+      <%= render "quizzes/components/question_navigation",
+                quiz: @quiz,
+                book: @book,
+                current_question: @current_question %>
     </div>
   </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.getElementById('quiz-form');
-  const radioButtons = form.querySelectorAll('input[type="radio"]');
-
-  radioButtons.forEach(radio => {
-    radio.addEventListener('change', function() {
-      const questionId = this.dataset.questionId;
-      const answer = this.value;
-
-      fetch('/quiz_answers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-          question_id: questionId,
-          answer: answer
-        })
-      }).then(response => {
-        if (!response.ok) {
-          console.error('Failed to save answer');
-        }
-      });
-    });
-  });
-});
-</script>
+<%= javascript_include_tag "quiz_answers" %>

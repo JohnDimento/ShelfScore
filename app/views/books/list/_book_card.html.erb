@@ -1,0 +1,25 @@
+<div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-full">
+  <div class="w-full h-48 bg-gray-100">
+    <% if book.thumbnail_url %>
+      <%= image_tag book.thumbnail_url, class: "w-full h-full object-contain", alt: "Cover of #{book.title}" %>
+    <% else %>
+      <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+        <span class="text-gray-400">No cover available</span>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="p-6 flex-1 flex flex-col">
+    <h2 class="text-xl font-semibold mb-2 line-clamp-1"><%= book.title %></h2>
+    <p class="text-gray-600 mb-4">by <%= book.author %></p>
+    <div class="mb-4 flex-1">
+      <p class="text-gray-700 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+        <%= truncate(book.description, length: 200, separator: ' ') %>
+      </p>
+    </div>
+    <div class="flex justify-between items-center mt-auto">
+      <%= link_to "View Details", book_path(book), class: "text-blue-600 hover:text-blue-800" %>
+      <%= button_to "Take Quiz", take_quiz_book_path(book), method: :post, class: "bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" %>
+    </div>
+  </div>
+</div>

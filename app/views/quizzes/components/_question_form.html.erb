@@ -1,0 +1,32 @@
+<div class="flex-1">
+  <!-- Question Header -->
+  <div class="px-8 pt-6">
+    <div class="flex justify-between items-center">
+      <span class="text-xl">Question <%= current_question_index + 1 %></span>
+      <span class="text-gray-600">1 point</span>
+    </div>
+    <div class="border-b border-gray-200 my-4"></div>
+  </div>
+
+  <!-- Question Content -->
+  <div class="px-8">
+    <p class="text-xl mb-8"><%= question.content %></p>
+    <div class="space-y-6">
+      <% question.options.each_with_index do |option, option_index| %>
+        <div class="flex items-start p-4 hover:bg-gray-50 transition-colors duration-150">
+          <div class="flex items-center h-5">
+            <%= radio_button_tag "answers[#{question.id}]",
+                ('A'.ord + option_index).chr,
+                session.dig(:quiz_answers, question.id.to_s) == ('A'.ord + option_index).chr,
+                class: "h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300",
+                id: "answer_#{question.id}_#{('A'.ord + option_index).chr}" %>
+          </div>
+          <label for="answer_<%= question.id %>_<%= ('A'.ord + option_index).chr %>"
+                 class="ml-3 block text-lg text-gray-700 cursor-pointer flex-grow">
+            <%= ('A'.ord + option_index).chr %>. <%= option %>
+          </label>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

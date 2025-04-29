@@ -27,8 +27,8 @@ class BooksController < ApplicationController
     end
 
     begin
-      Rails.logger.info "Initializing QuizGenerator"
-      generator = QuizGenerator.new(@book)
+      Rails.logger.info "Initializing Quiz Generator Service"
+      generator = Quizzes::GeneratorService.new(@book)
       Rails.logger.info "Generating quiz"
       @quiz = generator.generate_quiz!
       Rails.logger.info "Quiz generated successfully, redirecting to take quiz page"

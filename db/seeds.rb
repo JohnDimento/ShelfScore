@@ -92,7 +92,7 @@ books.each do |book_attrs|
   puts "Created book: #{book.title}"
 
   # Generate a quiz for each book
-  quiz = QuizGenerator.new(book).generate_quiz
+  quiz = Quizzes::GeneratorService.new(book).generate_quiz
   puts "Generated quiz for: #{book.title}"
 end
 

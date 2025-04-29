@@ -1,0 +1,21 @@
+<div class="w-32 bg-white rounded-lg shadow-md p-4">
+  <h3 class="text-lg font-medium pb-3 mb-4 border-b border-gray-200">Questions</h3>
+  <div class="space-y-2">
+    <% quiz.questions.each_with_index do |question, index| %>
+      <button form="quiz-form"
+              name="question"
+              value="<%= index %>"
+              type="submit"
+              formaction="<%= take_book_quiz_path(book, quiz) %>"
+              formmethod="get"
+              class="w-full flex items-center p-2 rounded-lg <%= index == current_question ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50' %>">
+        <span class="flex items-center justify-center w-full">
+          <span class="w-6 h-6 flex items-center justify-center rounded-full
+            <%= session.dig(:quiz_answers, question.id.to_s).present? ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' %>">
+            <%= index + 1 %>
+          </span>
+        </span>
+      </button>
+    <% end %>
+  </div>
+</div>
