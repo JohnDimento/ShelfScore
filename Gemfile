@@ -35,6 +35,9 @@ gem "nokogiri", "~> 1.15.0"
 # OpenAI API client
 gem "ruby-openai"
 
+# Authentication
+gem "devise"
+
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"
 
