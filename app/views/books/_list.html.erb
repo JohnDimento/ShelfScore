@@ -16,7 +16,9 @@
           <div class="flex justify-between items-start mb-4">
             <div class="min-w-0 pr-4">
               <h2 class="text-xl font-semibold text-slate-800 truncate">
-                <%= book.title %>
+                <%= link_to book_path(book), class: "hover:text-slate-600" do %>
+                  <%= book.title %>
+                <% end %>
               </h2>
               <p class="text-slate-600 mt-1">
                 by <%= book.author %>
@@ -39,10 +41,8 @@
                   <span>Take Quiz</span>
                 <% end %>
               <% else %>
-                <%= button_to book_quizzes_path(book),
-                  method: :post,
-                  class: "inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors" do %>
-                  <span>Generate Quiz</span>
+                <%= form_with url: take_quiz_book_path(book), method: :post, class: "inline-flex" do |f| %>
+                  <%= f.submit "Generate Quiz", class: "inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors" %>
                 <% end %>
               <% end %>
             </div>

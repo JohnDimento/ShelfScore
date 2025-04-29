@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_29_000001) do
+ActiveRecord::Schema[7.1].define(version: 2025_04_29_004032) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -46,6 +46,18 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_29_000001) do
     t.index ["quiz_id"], name: "index_questions_on_quiz_id"
   end
 
+  create_table "quiz_attempts", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "quiz_id", null: false
+    t.decimal "score", precision: 5, scale: 2, null: false
+    t.datetime "last_attempt_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "user_id, quiz_id, date_trunc('month'::text, last_attempt_at)", name: "index_quiz_attempts_on_user_quiz_and_month", unique: true
+    t.index ["quiz_id"], name: "index_quiz_attempts_on_quiz_id"
+    t.index ["user_id"], name: "index_quiz_attempts_on_user_id"
+  end
+
   create_table "quizzes", force: :cascade do |t|
     t.bigint "book_id", null: false
     t.string "title"
@@ -68,5 +80,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_29_000001) do
   end
 
   add_foreign_key "questions", "quizzes"
+  add_foreign_key "quiz_attempts", "quizzes"
+  add_foreign_key "quiz_attempts", "users"
   add_foreign_key "quizzes", "books"
 end

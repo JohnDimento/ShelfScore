@@ -1,6 +1,9 @@
 class QuizzesController < ApplicationController
+  before_action :authenticate_user!
+  before_action :set_quiz_and_book
+  before_action :check_attempt_eligibility, only: [:take]
+
   def create
-    @book = Book.find(params[:book_id])
     generator = QuizGenerator.new(@book)
 
     begin
@@ -15,8 +18,6 @@ class QuizzesController < ApplicationController
   end
 
   def take
-    @quiz = Quiz.find(params[:id])
-    @book = @quiz.book
     @current_question = (params[:question] || 0).to_i
     @question_count = @quiz.questions.count
 
@@ -31,9 +32,6 @@ class QuizzesController < ApplicationController
   end
 
   def submit
-    @quiz = Quiz.find(params[:id])
-    @book = @quiz.book
-
     # Save the last answer if present
     if params[:answers].present? && params[:last_question].present?
       session[:quiz_answers] ||= {}
@@ -61,9 +59,41 @@ class QuizzesController < ApplicationController
 
     @score_percentage = (@correct_answers.to_f / @total_questions * 100).round(2)
 
+    # Record the quiz attempt
+    @quiz_attempt = QuizAttempt.new(
+      user: current_user,
+      quiz: @quiz,
+      score: @score_percentage,
+      last_attempt_at: Time.current
+    )
+
+    if @quiz_attempt.save
+      flash[:notice] = if @quiz_attempt.successful?
+                        "Congratulations! You scored #{@score_percentage}% and this book will be added to your bookshelf!"
+                      else
+                        "You scored #{@score_percentage}%. You need at least 70% for this book to be added to your bookshelf. Try again next month!"
+                      end
+    else
+      flash[:alert] = "Failed to record quiz attempt. #{@quiz_attempt.errors.full_messages.join(', ')}"
+    end
+
     # Clear answers from session after storing them
     session.delete(:quiz_answers)
 
     render :results
+  end
+
+  private
+
+  def set_quiz_and_book
+    @quiz = Quiz.find(params[:id])
+    @book = @quiz.book
+  end
+
+  def check_attempt_eligibility
+    unless QuizAttempt.can_attempt?(current_user, @quiz)
+      redirect_to book_path(@book),
+                  alert: "You can only attempt this quiz once per month. Please try again next month."
+    end
   end
 end

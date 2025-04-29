@@ -3,6 +3,14 @@ Rails.application.routes.draw do
   root 'home#index'
 
   resources :books do
+    collection do
+      get :bookshelf
+    end
+
+    member do
+      post :take_quiz
+    end
+
     resources :quizzes, only: [:create] do
       member do
         get :take
