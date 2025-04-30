@@ -90,11 +90,12 @@ module Quizzes
         - Focus on character motivations, relationships, and development
         - Include questions about key plot points and their significance
         - Make the incorrect answers plausible but clearly wrong
+        - Do NOT include the answer letter (A, B, C, D) in the answer text itself
 
         Return ONLY raw JSON - no markdown, no code blocks, no explanation.
         The response must be a JSON array of #{QUESTION_COUNT} objects, each with:
         - "content": the question text
-        - "options": an array of 4 answer strings
+        - "options": an array of 4 answer strings (without A, B, C, D prefixes)
         - "correct_answer": one of "A","B","C","D"
 
         Book title: #{@book.title}
