@@ -46,8 +46,8 @@ class BooksController < ApplicationController
       )
 
       respond_to do |format|
-        format.html { redirect_to quiz_attempt_path(@quiz_attempt) }
-        format.json { render json: { quiz_attempt_id: @quiz_attempt.id, status: 'success' } }
+        format.html { redirect_to take_book_quiz_path(@book, @quiz) }
+        format.json { render json: { quiz_id: @quiz.id, status: 'success' } }
       end
     rescue => e
       Rails.logger.error "Error generating quiz: #{e.message}"
