@@ -90,30 +90,17 @@ namespace :books do
     end
   end
 
-  desc 'Bulk import large number of books from Google Books API'
+  desc 'Bulk import books with conservative API usage'
   task bulk_import: :environment do
     service = Books::GoogleBooksService.new
     total_imported = 0
 
-    # Comprehensive genre and category queries
+    # Very focused categories to minimize API calls
     categories = {
-      'Fiction' => [
-        'fiction', 'novels', 'contemporary fiction', 'literary fiction',
-        'mystery', 'thriller', 'romance', 'science fiction', 'fantasy',
-        'historical fiction', 'horror', 'adventure', 'classics'
-      ],
-      'Non-Fiction' => [
-        'non-fiction', 'biography', 'history', 'science', 'philosophy',
-        'psychology', 'business', 'self-help', 'travel', 'cooking',
-        'art', 'technology', 'politics', 'economics'
-      ],
-      'Academic' => [
-        'textbook', 'academic', 'research', 'education', 'mathematics',
-        'physics', 'chemistry', 'biology', 'engineering', 'computer science'
-      ],
-      'Children & Young Adult' => [
-        'children books', 'young adult', 'middle grade', 'picture books',
-        'teen fiction', 'juvenile literature'
+      'Best of 2024' => [
+        'bestsellers 2024',
+        'top fiction 2024',
+        'best nonfiction 2024'
       ]
     }
 
@@ -128,51 +115,64 @@ namespace :books do
         current_query += 1
         puts "\nProcessing query #{current_query}/#{total_queries}: #{query}"
 
-        # Try to get multiple pages of results
         start_index = 0
-        books_found = true
-        retries = 0
-        max_retries = 3
+        consecutive_errors = 0
+        max_consecutive_errors = 3
 
-        while books_found && start_index < 1000 # Google Books API limit
+        while start_index < 100 && consecutive_errors < max_consecutive_errors # Reduced from 200 to 100
           begin
             puts "Fetching results starting at index #{start_index}..."
 
-            # Get maximum allowed books per request (40 is Google Books API max)
+            # Get books in smaller batches
             books = service.import_books_by_query(
               query,
-              max_results: 40,
+              max_results: 10, # Reduced from 20 to 10
               start_index: start_index
             )
 
-            if books.any?
-              total_imported += books.count
-              puts "Imported #{books.count} books (Total: #{total_imported})"
-              start_index += books.count
+            if books[:success?] && books[:books].any?
+              total_imported += books[:books].count
+              puts "Imported #{books[:books].count} books (Total: #{total_imported})"
+              start_index += books[:books].count
+              consecutive_errors = 0
 
-              # Small delay to avoid rate limiting
-              sleep 3
+              # Much longer delay between requests
+              puts "Waiting 30 seconds between requests..."
+              sleep 30
             else
-              books_found = false
+              puts "No more books found for this query."
+              break
             end
 
-            retries = 0
           rescue => e
-            retries += 1
-            if retries <= max_retries
-              puts "Error occurred: #{e.message}. Retry #{retries}/#{max_retries}..."
-              sleep 30 * retries # Exponential backoff
-              retry
+            consecutive_errors += 1
+
+            if e.message.include?('RESOURCE_EXHAUSTED') || e.message.include?('Quota exceeded')
+              puts "\nAPI quota exceeded. Waiting 10 minutes before continuing..."
+              sleep 600 # Wait 10 minutes
+            elsif e.message.include?('ECONNRESET') || e.message.include?('connection')
+              puts "\nConnection error. Waiting 2 minutes before retry..."
+              sleep 120 # Wait 2 minutes
             else
-              puts "Failed after #{max_retries} retries, moving to next query"
+              puts "Error: #{e.message}"
+              puts "Waiting 1 minute before retry..."
+              sleep 60
+            end
+
+            if consecutive_errors >= max_consecutive_errors
+              puts "\nToo many consecutive errors. Moving to next query."
               break
             end
           end
         end
 
-        # Brief pause between queries
-        sleep 5
+        # Much longer pause between queries
+        puts "\nTaking a break between queries (2 minutes)..."
+        sleep 120
       end
+
+      puts "\nCategory completed: #{category}"
+      puts "Total books imported so far: #{total_imported}"
     end
 
     puts "\nBulk import completed!"
