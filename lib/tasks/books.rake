@@ -95,12 +95,22 @@ namespace :books do
     service = Books::GoogleBooksService.new
     total_imported = 0
 
-    # Very focused categories to minimize API calls
+    # General popular categories
     categories = {
-      'Best of 2024' => [
-        'bestsellers 2024',
-        'top fiction 2024',
-        'best nonfiction 2024'
+      'Fiction' => [
+        'popular fiction',
+        'bestselling novels',
+        'contemporary fiction'
+      ],
+      'Mystery & Thriller' => [
+        'mystery books',
+        'thriller novels',
+        'crime fiction'
+      ],
+      'Romance' => [
+        'romance novels',
+        'love stories',
+        'romantic fiction'
       ]
     }
 
@@ -119,14 +129,13 @@ namespace :books do
         consecutive_errors = 0
         max_consecutive_errors = 3
 
-        while start_index < 100 && consecutive_errors < max_consecutive_errors # Reduced from 200 to 100
+        while start_index < 100 && consecutive_errors < max_consecutive_errors
           begin
             puts "Fetching results starting at index #{start_index}..."
 
-            # Get books in smaller batches
             books = service.import_books_by_query(
               query,
-              max_results: 10, # Reduced from 20 to 10
+              max_results: 10,
               start_index: start_index
             )
 
@@ -136,7 +145,6 @@ namespace :books do
               start_index += books[:books].count
               consecutive_errors = 0
 
-              # Much longer delay between requests
               puts "Waiting 30 seconds between requests..."
               sleep 30
             else
@@ -149,10 +157,10 @@ namespace :books do
 
             if e.message.include?('RESOURCE_EXHAUSTED') || e.message.include?('Quota exceeded')
               puts "\nAPI quota exceeded. Waiting 10 minutes before continuing..."
-              sleep 600 # Wait 10 minutes
+              sleep 600
             elsif e.message.include?('ECONNRESET') || e.message.include?('connection')
               puts "\nConnection error. Waiting 2 minutes before retry..."
-              sleep 120 # Wait 2 minutes
+              sleep 120
             else
               puts "Error: #{e.message}"
               puts "Waiting 1 minute before retry..."
@@ -166,7 +174,6 @@ namespace :books do
           end
         end
 
-        # Much longer pause between queries
         puts "\nTaking a break between queries (2 minutes)..."
         sleep 120
       end
