@@ -1,30 +1,20 @@
 namespace :books do
-  desc 'Import books from Google Books API'
-  task import: :environment do
+  desc 'Import modern books from Google Books API'
+  task import_modern: :environment do
     service = Books::GoogleBooksService.new
 
-    # Break queries into smaller batches
+    # Modern book queries focused on recent publications
     query_batches = [
-      # Batch 1 - Contemporary
-      ['contemporary fiction', 'literary fiction', 'modern bestsellers'],
-      # Batch 2 - Mysteries
-      ['cozy mystery', 'detective fiction', 'crime novels'],
-      # Batch 3 - Romance
-      ['historical romance', 'romantic comedy', 'paranormal romance'],
-      # Batch 4 - Fantasy
-      ['epic fantasy', 'urban fantasy', 'young adult fantasy'],
-      # Batch 5 - Science Fiction
-      ['space opera', 'cyberpunk', 'science fiction classics'],
-      # Batch 6 - Non-Fiction
-      ['popular science', 'business leadership', 'self improvement'],
-      # Batch 7 - Award Winners
-      ['nobel prize literature', 'man booker prize', 'costa book awards'],
-      # Batch 8 - Genres
-      ['psychological thriller', 'horror fiction', 'magical realism'],
-      # Batch 9 - Children/YA
-      ['middle grade fiction', 'young adult contemporary', 'picture books'],
-      # Batch 10 - Specific Topics
-      ['climate change books', 'artificial intelligence', 'world history']
+      # Contemporary Fiction
+      ['2024 bestsellers', 'new releases fiction 2024', '2023 bestselling novels'],
+      # Modern Genre Fiction
+      ['contemporary thriller 2024', 'modern romance 2024', 'contemporary fantasy 2024'],
+      # Popular Modern Authors
+      ['Colleen Hoover', 'Taylor Jenkins Reid', 'Emily Henry'],
+      # Book Prize Winners
+      ['booker prize 2023', 'goodreads choice 2023', 'national book award 2023'],
+      # Modern Non-Fiction
+      ['2024 business books', '2024 self help', 'modern psychology books']
     ]
 
     total_imported = 0
@@ -35,30 +25,27 @@ namespace :books do
       batch.each do |query|
         puts "\nImporting books for query: #{query}"
         begin
-          # Reduce books per query to 10 to avoid hitting limits
-          books = service.import_books_by_query(query, max_results: 10)
+          # Import more books per query (20 instead of 10)
+          books = service.import_books_by_query(query, max_results: 20)
           total_imported += books.count
           puts "Imported #{books.count} books for '#{query}'"
 
-          # Add a short delay between queries in the same batch
-          puts "Short pause between queries..."
-          sleep 30
+          # Minimal delay between queries
+          sleep 5
         rescue => e
           puts "Error importing books for '#{query}': #{e.message}"
-          # Add a longer delay if we hit an error
-          puts "Longer pause after error..."
-          sleep 120
+          sleep 30  # Shorter recovery time after error
         end
       end
 
-      # Add a longer delay between batches
+      # Shorter delay between batches
       unless batch_index == query_batches.size - 1
-        puts "\nTaking a break between batches (180 seconds)..."
-        sleep 180
+        puts "\nBrief pause between batches..."
+        sleep 30
       end
     end
 
-    puts "\nTotal books imported: #{total_imported}"
+    puts "\nTotal modern books imported: #{total_imported}"
     puts "\nRunning description cleanup..."
     Rake::Task["books:clean_descriptions"].invoke
   end
