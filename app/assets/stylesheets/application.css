@@ -13,3 +13,26 @@
  *= require_tree .
  *= require_self
  */
+
+[x-cloak] {
+  display: none !important;
+}
+
+/* Modal transitions */
+.modal-enter {
+  opacity: 0;
+}
+
+.modal-enter-active {
+  opacity: 1;
+  transition: opacity 200ms ease-out;
+}
+
+.modal-leave {
+  opacity: 1;
+}
+
+.modal-leave-active {
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+}

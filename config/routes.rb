@@ -5,6 +5,8 @@ Rails.application.routes.draw do
   resources :books do
     collection do
       get :bookshelf
+      get :google_search
+      post :import_from_google
     end
 
     member do
