@@ -23,7 +23,7 @@
           </div>
           <label for="answer_<%= question.id %>_<%= ('A'.ord + option_index).chr %>"
                  class="ml-3 block text-lg text-gray-700 cursor-pointer flex-grow">
-            <%= ('A'.ord + option_index).chr %>. <%= option %>
+            <%= ('A'.ord + option_index).chr %>. <%= option.gsub(/^[A-D]\)\s*/, '') %>
           </label>
         </div>
       <% end %>
