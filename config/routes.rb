@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  resources :leaderboards, only: [:index]
+  get '/leaderboard', to: 'leaderboards#index', as: :leaderboards
   devise_for :users
   root 'home#index'
 
