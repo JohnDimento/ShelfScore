@@ -173,32 +173,37 @@ async function generateQuiz() {
   generateQuizBtn.disabled = true;
 
   try {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
     const response = await fetch(`/books/${importedBookId}/take_quiz`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+        'X-CSRF-Token': csrfToken,
         'Accept': 'application/json'
-      }
+      },
+      credentials: 'same-origin'
     });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        // Unauthorized - redirect to login
+        window.location.href = '/users/sign_in';
+        return;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
     const data = await response.json();
 
-    if (response.ok) {
-      successDiv.classList.remove('hidden');
-      successDiv.querySelector('p').textContent = 'Quiz generated successfully! Taking you to the quiz...';
+    successDiv.classList.remove('hidden');
+    successDiv.querySelector('p').textContent = 'Quiz generated successfully! Taking you to the quiz...';
 
-      // Redirect to the quiz taking page
-      window.location.href = `/books/${importedBookId}/quizzes/${data.quiz_id}/take`;
-    } else {
-      errorDiv.classList.remove('hidden');
-      errorDiv.querySelector('p').textContent = data.error || 'Failed to generate quiz. Please try again.';
-      generateQuizBtn.disabled = false;
-    }
+    // Redirect to the quiz taking page
+    window.location.href = `/books/${importedBookId}/quizzes/${data.quiz_id}/take`;
   } catch (error) {
     console.error('Quiz generation error:', error);
     errorDiv.classList.remove('hidden');
-    errorDiv.querySelector('p').textContent = 'Failed to connect to the server. Please try again.';
+    errorDiv.querySelector('p').textContent = 'Failed to generate quiz. Please try again.';
     generateQuizBtn.disabled = false;
   } finally {
     loadingDiv.classList.add('hidden');
