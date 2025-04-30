@@ -38,16 +38,18 @@ class BooksController < ApplicationController
       @quiz = generator.generate_quiz!
       Rails.logger.info "Quiz generated successfully with ID: #{@quiz.id}"
 
+      # Create a quiz attempt for this user
+      @quiz_attempt = current_user.quiz_attempts.create!(quiz: @quiz)
+
       respond_to do |format|
-        format.html { redirect_to take_book_quiz_path(@book, @quiz) }
-        format.json { render json: { quiz_id: @quiz.id, message: 'Quiz generated successfully' } }
+        format.html { redirect_to quiz_attempt_path(@quiz_attempt) }
+        format.json { render json: { quiz_attempt_id: @quiz_attempt.id, status: 'success' } }
       end
-    rescue StandardError => e
-      Rails.logger.error "Quiz generation failed: #{e.message}\n#{e.backtrace.join("\n")}"
-      error_msg = "Failed to generate quiz questions. Please try again."
+    rescue => e
+      Rails.logger.error "Error generating quiz: #{e.message}"
       respond_to do |format|
-        format.html { redirect_to book_path(@book), error: error_msg }
-        format.json { render json: { error: error_msg }, status: :unprocessable_entity }
+        format.html { redirect_to book_path(@book), error: 'Failed to generate quiz. Please try again.' }
+        format.json { render json: { error: 'Failed to generate quiz' }, status: :unprocessable_entity }
       end
     end
   end

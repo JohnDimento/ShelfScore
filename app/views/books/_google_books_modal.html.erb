@@ -170,11 +170,15 @@ async function importBookAndGenerateQuiz(googleBooksId) {
 
     const quizData = await quizResponse.json();
 
+    if (!quizData.quiz_attempt_id) {
+      throw new Error('No quiz attempt ID received from server');
+    }
+
     // Show brief success message before redirecting
     successDiv.classList.remove('hidden');
     successDiv.querySelector('p').textContent = 'Book imported! Taking you to your quiz...';
 
-    // Redirect to the quiz
+    // Redirect to the quiz attempt
     setTimeout(() => {
       window.location.href = `/quiz_attempts/${quizData.quiz_attempt_id}`;
     }, 500);
