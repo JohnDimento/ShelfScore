@@ -178,9 +178,9 @@ async function importBookAndGenerateQuiz(googleBooksId) {
     successDiv.classList.remove('hidden');
     successDiv.querySelector('p').textContent = 'Book imported! Taking you to your quiz...';
 
-    // Redirect to the quiz attempt
+    // Redirect to the quiz attempt using the server-provided URL
     setTimeout(() => {
-      window.location.href = `/quiz_attempts/${quizData.quiz_attempt_id}`;
+      window.location.href = quizData.redirect_url;
     }, 500);
 
   } catch (error) {
