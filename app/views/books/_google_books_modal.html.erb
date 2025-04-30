@@ -44,14 +44,6 @@
       <div id="google-books-success" class="hidden">
         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
           <p class="text-green-800 text-center"></p>
-          <div class="mt-4 flex justify-center">
-            <button
-              id="generate-quiz-btn"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Generate Quiz
-            </button>
-          </div>
         </div>
       </div>
 
@@ -105,7 +97,7 @@ async function searchGoogleBooks() {
               onclick="importBookAndGenerateQuiz('${book.id}')"
               class="mt-2 px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
             >
-              Import & Start Quiz
+              Import & Generate Quiz
             </button>
           </div>
         `;
@@ -133,59 +125,45 @@ async function importBookAndGenerateQuiz(googleBooksId) {
   successDiv.classList.add('hidden');
 
   try {
-    // First, import the book
-    const importResponse = await fetch('/books/import_from_google', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-      },
-      body: JSON.stringify({ google_books_id: googleBooksId })
-    });
-
-    const importData = await importResponse.json();
-
-    if (!importResponse.ok && importResponse.status !== 206) {
-      throw new Error(importData.error || 'Failed to import book');
-    }
-
-    // Then, generate the quiz
-    const quizResponse = await fetch(`/books/${importData.book.id}/take_quiz`, {
+    const response = await fetch('/books/import_from_google', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
         'Accept': 'application/json'
       },
+      body: JSON.stringify({ google_books_id: googleBooksId }),
       credentials: 'same-origin'
     });
 
-    if (!quizResponse.ok) {
-      if (quizResponse.status === 401) {
-        window.location.href = '/users/sign_in';
-        return;
+    const data = await response.json();
+
+    if (response.ok) {
+      // If quiz was generated successfully, redirect to take the quiz
+      if (data.quiz) {
+        successDiv.classList.remove('hidden');
+        successDiv.querySelector('p').textContent = 'Book imported and quiz generated! Taking you to the quiz...';
+        setTimeout(() => {
+          window.location.href = `/books/${data.book.id}/quizzes/${data.quiz.id}/take`;
+        }, 1000);
+      } else {
+        // If quiz wasn't generated, show error and redirect to book page
+        successDiv.classList.remove('hidden');
+        successDiv.querySelector('p').textContent = 'Book imported successfully! Redirecting to book page...';
+        setTimeout(() => {
+          window.location.href = `/books/${data.book.id}`;
+        }, 1000);
       }
-      throw new Error(`Failed to generate quiz: ${quizResponse.status}`);
+    } else if (response.status === 401) {
+      // Unauthorized - redirect to login
+      window.location.href = '/users/sign_in';
+    } else {
+      errorDiv.classList.remove('hidden');
+      errorDiv.querySelector('p').textContent = data.error || 'Failed to import book';
     }
-
-    const quizData = await quizResponse.json();
-
-    if (!quizData.quiz_attempt_id) {
-      throw new Error('No quiz attempt ID received from server');
-    }
-
-    // Show brief success message before redirecting
-    successDiv.classList.remove('hidden');
-    successDiv.querySelector('p').textContent = 'Book imported! Taking you to your quiz...';
-
-    // Redirect to the quiz attempt using the server-provided URL
-    setTimeout(() => {
-      window.location.href = quizData.redirect_url;
-    }, 500);
-
   } catch (error) {
     errorDiv.classList.remove('hidden');
-    errorDiv.querySelector('p').textContent = error.message || 'Failed to process your request';
+    errorDiv.querySelector('p').textContent = 'Failed to connect to the server';
   } finally {
     loadingDiv.classList.add('hidden');
   }
