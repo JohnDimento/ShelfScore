@@ -81,7 +81,16 @@ module Quizzes
 
     def generate_prompt
       <<~PROMPT
-        You are a literature expert. Generate a quiz about this book.
+        You are a literature expert. Generate a quiz about this book that tests deep understanding of the story.
+        Focus on character development, major plot points, themes, and literary devices.
+        Avoid questions about basic facts like the title or author.
+
+        For each question:
+        - Make it thought-provoking and require understanding of the story
+        - Focus on character motivations, relationships, and development
+        - Include questions about key plot points and their significance
+        - Make the incorrect answers plausible but clearly wrong
+
         Return ONLY raw JSON - no markdown, no code blocks, no explanation.
         The response must be a JSON array of #{QUESTION_COUNT} objects, each with:
         - "content": the question text
