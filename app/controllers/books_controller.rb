@@ -38,8 +38,12 @@ class BooksController < ApplicationController
       @quiz = generator.generate_quiz!
       Rails.logger.info "Quiz generated successfully with ID: #{@quiz.id}"
 
-      # Create a quiz attempt for this user
-      @quiz_attempt = current_user.quiz_attempts.create!(quiz: @quiz)
+      # Create a quiz attempt for this user with default values
+      @quiz_attempt = current_user.quiz_attempts.create!(
+        quiz: @quiz,
+        score: 0,
+        last_attempt_at: Time.current
+      )
 
       respond_to do |format|
         format.html { redirect_to quiz_attempt_path(@quiz_attempt) }
