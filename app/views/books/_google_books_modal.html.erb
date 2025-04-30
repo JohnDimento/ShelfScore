@@ -102,10 +102,10 @@ async function searchGoogleBooks() {
             <p class="text-gray-600">${book.author}</p>
             <p class="text-sm text-gray-500 line-clamp-2 mt-1">${book.description || ''}</p>
             <button
-              onclick="importBook('${book.id}')"
+              onclick="importBookAndGenerateQuiz('${book.id}')"
               class="mt-2 px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
             >
-              Import Book
+              Import & Start Quiz
             </button>
           </div>
         `;
@@ -123,7 +123,7 @@ async function searchGoogleBooks() {
   }
 }
 
-async function importBook(googleBooksId) {
+async function importBookAndGenerateQuiz(googleBooksId) {
   const errorDiv = document.getElementById('google-books-error');
   const successDiv = document.getElementById('google-books-success');
   const loadingDiv = document.getElementById('google-books-loading');
@@ -133,7 +133,8 @@ async function importBook(googleBooksId) {
   successDiv.classList.add('hidden');
 
   try {
-    const response = await fetch('/books/import_from_google', {
+    // First, import the book
+    const importResponse = await fetch('/books/import_from_google', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -142,74 +143,47 @@ async function importBook(googleBooksId) {
       body: JSON.stringify({ google_books_id: googleBooksId })
     });
 
-    const data = await response.json();
+    const importData = await importResponse.json();
 
-    if (response.ok || response.status === 206) {
-      importedBookId = data.book.id;
-      successDiv.classList.remove('hidden');
-      successDiv.querySelector('p').textContent = 'Book imported successfully! Click "Generate Quiz" to create a quiz for this book.';
-    } else {
-      errorDiv.classList.remove('hidden');
-      errorDiv.querySelector('p').textContent = data.error || 'Failed to import book';
+    if (!importResponse.ok && importResponse.status !== 206) {
+      throw new Error(importData.error || 'Failed to import book');
     }
-  } catch (error) {
-    errorDiv.classList.remove('hidden');
-    errorDiv.querySelector('p').textContent = 'Failed to connect to the server';
-  } finally {
-    loadingDiv.classList.add('hidden');
-  }
-}
 
-async function generateQuiz() {
-  if (!importedBookId) return;
-
-  const errorDiv = document.getElementById('google-books-error');
-  const successDiv = document.getElementById('google-books-success');
-  const loadingDiv = document.getElementById('google-books-loading');
-  const generateQuizBtn = document.getElementById('generate-quiz-btn');
-
-  loadingDiv.classList.remove('hidden');
-  errorDiv.classList.add('hidden');
-  generateQuizBtn.disabled = true;
-
-  try {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-    const response = await fetch(`/books/${importedBookId}/take_quiz`, {
+    // Then, generate the quiz
+    const quizResponse = await fetch(`/books/${importData.book.id}/take_quiz`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': csrfToken,
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
         'Accept': 'application/json'
       },
       credentials: 'same-origin'
     });
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        // Unauthorized - redirect to login
+    if (!quizResponse.ok) {
+      if (quizResponse.status === 401) {
         window.location.href = '/users/sign_in';
         return;
       }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`Failed to generate quiz: ${quizResponse.status}`);
     }
 
-    const data = await response.json();
+    const quizData = await quizResponse.json();
 
+    // Show brief success message before redirecting
     successDiv.classList.remove('hidden');
-    successDiv.querySelector('p').textContent = 'Quiz generated successfully! Taking you to the quiz...';
+    successDiv.querySelector('p').textContent = 'Book imported! Taking you to your quiz...';
 
-    // Redirect to the quiz taking page
-    window.location.href = `/books/${importedBookId}/quizzes/${data.quiz_id}/take`;
+    // Redirect to the quiz
+    setTimeout(() => {
+      window.location.href = `/quiz_attempts/${quizData.quiz_attempt_id}`;
+    }, 500);
+
   } catch (error) {
-    console.error('Quiz generation error:', error);
     errorDiv.classList.remove('hidden');
-    errorDiv.querySelector('p').textContent = 'Failed to generate quiz. Please try again.';
-    generateQuizBtn.disabled = false;
+    errorDiv.querySelector('p').textContent = error.message || 'Failed to process your request';
   } finally {
     loadingDiv.classList.add('hidden');
   }
 }
-
-// Add click handler for the Generate Quiz button
-document.getElementById('generate-quiz-btn').addEventListener('click', generateQuiz);
 </script>
