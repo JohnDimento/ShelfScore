@@ -176,23 +176,33 @@ async function generateQuiz() {
     const response = await fetch(`/books/${importedBookId}/take_quiz`, {
       method: 'POST',
       headers: {
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json'
       }
     });
 
+    const data = await response.json();
+
     if (response.ok) {
+      successDiv.classList.remove('hidden');
       successDiv.querySelector('p').textContent = 'Quiz generated successfully! Redirecting to the quiz...';
+
+      // Get the quiz ID from the response
+      const quizId = data.quiz_id;
+
       setTimeout(() => {
-        window.location.href = `/books/${importedBookId}`;
+        window.location.href = `/books/${importedBookId}/quizzes/${quizId}/take`;
       }, 2000);
     } else {
       errorDiv.classList.remove('hidden');
-      errorDiv.querySelector('p').textContent = 'Failed to generate quiz. Please try again.';
+      errorDiv.querySelector('p').textContent = data.error || 'Failed to generate quiz. Please try again.';
       generateQuizBtn.disabled = false;
     }
   } catch (error) {
+    console.error('Quiz generation error:', error);
     errorDiv.classList.remove('hidden');
-    errorDiv.querySelector('p').textContent = 'Failed to connect to the server';
+    errorDiv.querySelector('p').textContent = 'Failed to connect to the server. Please try again.';
     generateQuizBtn.disabled = false;
   } finally {
     loadingDiv.classList.add('hidden');

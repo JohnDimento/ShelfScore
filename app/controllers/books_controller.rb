@@ -23,8 +23,12 @@ class BooksController < ApplicationController
 
     if ENV['OPENAI_API_KEY'].blank?
       Rails.logger.error "OpenAI API key is missing"
-      flash[:error] = "OpenAI API key is not configured. Please set the OPENAI_API_KEY environment variable."
-      redirect_to book_path(@book) and return
+      error_msg = "OpenAI API key is not configured. Please set the OPENAI_API_KEY environment variable."
+      respond_to do |format|
+        format.html { redirect_to book_path(@book), error: error_msg }
+        format.json { render json: { error: error_msg }, status: :unprocessable_entity }
+      end
+      return
     end
 
     begin
@@ -32,12 +36,19 @@ class BooksController < ApplicationController
       generator = Quizzes::GeneratorService.new(@book)
       Rails.logger.info "Generating quiz"
       @quiz = generator.generate_quiz!
-      Rails.logger.info "Quiz generated successfully, redirecting to take quiz page"
-      redirect_to take_book_quiz_path(@book, @quiz)
+      Rails.logger.info "Quiz generated successfully with ID: #{@quiz.id}"
+
+      respond_to do |format|
+        format.html { redirect_to take_book_quiz_path(@book, @quiz) }
+        format.json { render json: { quiz_id: @quiz.id, message: 'Quiz generated successfully' } }
+      end
     rescue StandardError => e
       Rails.logger.error "Quiz generation failed: #{e.message}\n#{e.backtrace.join("\n")}"
-      flash[:error] = "Failed to generate quiz questions. Please try again."
-      redirect_to book_path(@book)
+      error_msg = "Failed to generate quiz questions. Please try again."
+      respond_to do |format|
+        format.html { redirect_to book_path(@book), error: error_msg }
+        format.json { render json: { error: error_msg }, status: :unprocessable_entity }
+      end
     end
   end
 
