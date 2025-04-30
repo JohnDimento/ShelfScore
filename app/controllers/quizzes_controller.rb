@@ -1,6 +1,7 @@
 class QuizzesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_quiz_and_book
+  before_action :set_quiz_and_book, except: [:create]
+  before_action :set_book_for_create, only: [:create]
   before_action :check_attempt_eligibility, only: [:take]
 
   def create
@@ -88,6 +89,10 @@ class QuizzesController < ApplicationController
   def set_quiz_and_book
     @quiz = Quiz.find(params[:id])
     @book = @quiz.book
+  end
+
+  def set_book_for_create
+    @book = Book.find(params[:book_id])
   end
 
   def check_attempt_eligibility

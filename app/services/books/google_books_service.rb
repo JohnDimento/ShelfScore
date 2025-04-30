@@ -30,9 +30,9 @@ module Books
 
     def import_book(google_books_id)
       result = find_by_id(google_books_id)
-      return result unless result.success?
+      return result unless result[:success?]
 
-      volume = result.book
+      volume = result[:book]
       book = Book.find_or_initialize_by(google_books_id: google_books_id)
       volume_info = volume.volume_info
 
@@ -47,10 +47,10 @@ module Books
 
     def import_books_by_query(query, max_results: 10)
       search_result = search(query, max_results: max_results)
-      return search_result unless search_result.success?
+      return search_result unless search_result[:success?]
 
-      imported_books = search_result.books.map { |volume| import_book(volume.id) }
-      success(books: imported_books.select(&:success?).map(&:book))
+      imported_books = search_result[:books].map { |volume| import_book(volume.id) }
+      success(books: imported_books.select { |result| result[:success?] }.map { |result| result[:book] })
     end
 
     private
@@ -58,7 +58,7 @@ module Books
     def book_attributes(volume_info)
       {
         title: volume_info.title,
-        author: volume_info.authors&.join(', '),
+        author: volume_info.authors&.join(', ') || 'Unknown Author',
         description: clean_description(volume_info.description),
         published_year: volume_info.published_date&.to_i,
         isbn_13: find_identifier(volume_info, 'ISBN_13'),
@@ -79,15 +79,29 @@ module Books
     def clean_description(html_description)
       return nil if html_description.nil?
 
-      # Parse HTML and get text content
-      doc = Nokogiri::HTML(html_description)
+      doc = Nokogiri::HTML.fragment(html_description)
 
-      # Replace <br> and <br/> with newlines
+      # Replace <br> tags with newlines
       doc.css('br').each { |br| br.replace("\n") }
 
-      # Get text content and clean up extra whitespace
-      text = doc.text.strip
-      text.gsub(/\n\s*\n/, "\n\n") # Replace multiple blank lines with a single blank line
+      # Add newlines after block elements
+      doc.css('p, div, h1, h2, h3, h4, h5, h6').each do |elem|
+        elem.add_next_sibling("\n")
+      end
+
+      # Get text content and clean up
+      text = doc.text
+        .gsub(/[[:space:]]+/, ' ')  # Normalize all whitespace to single spaces
+        .gsub(/\s*\n\s*/, "\n")     # Clean up spaces around newlines
+        .gsub(/\n{3,}/, "\n\n")     # Collapse multiple newlines to double newlines
+        .strip
+
+      # For block elements, ensure proper paragraph spacing
+      if html_description.match?(/<\/?(?:p|div)\b/)
+        text = text.gsub(/\n/, "\n\n").gsub(/\n{3,}/, "\n\n")
+      end
+
+      text.lines.map(&:strip).join("\n").strip
     end
   end
 end

@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :quiz_attempt do
-    user { nil }
-    quiz { nil }
-    score { "9.99" }
-    last_attempt_at { "2025-04-28 19:40:33" }
+    association :user
+    association :quiz
+    score { rand(0..100) }
+    last_attempt_at { Time.current }
   end
 end

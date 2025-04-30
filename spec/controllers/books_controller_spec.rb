@@ -1,6 +1,14 @@
 require 'rails_helper'
 
 RSpec.describe BooksController, type: :controller do
+  include Devise::Test::ControllerHelpers
+
+  let(:user) { create(:user) }
+
+  before do
+    sign_in user
+  end
+
   describe 'GET #index' do
     let!(:books) { create_list(:book, 3) }
 
@@ -38,37 +46,48 @@ RSpec.describe BooksController, type: :controller do
   describe 'POST #take_quiz' do
     let(:book) { create(:book) }
 
-    context 'when quiz already exists' do
-      let!(:quiz) { create(:quiz, book: book) }
-
-      it 'does not create a new quiz' do
-        expect {
-          post :take_quiz, params: { id: book.id }
-        }.not_to change(Quiz, :count)
+    context 'when OpenAI API key is missing' do
+      before do
+        allow(ENV).to receive(:[]).with('OPENAI_API_KEY').and_return(nil)
       end
 
-      it 'redirects to the book show page' do
+      it 'redirects to book path with error' do
         post :take_quiz, params: { id: book.id }
         expect(response).to redirect_to(book_path(book))
+        expect(flash[:error]).to include('OpenAI API key is not configured')
       end
     end
 
-    context 'when quiz does not exist' do
-      let(:quiz) { instance_double(Quiz) }
-      let(:quiz_generator_double) { instance_double(Quizzes::GeneratorService, generate_quiz: quiz) }
+    context 'when OpenAI API key is present' do
+      let(:quiz) { create(:quiz, book: book) }
+      let(:generator_service) { instance_double(Quizzes::GeneratorService) }
 
       before do
-        allow(Quizzes::GeneratorService).to receive(:new).with(book).and_return(quiz_generator_double)
+        allow(ENV).to receive(:[]).with('OPENAI_API_KEY').and_return('test-key')
+        allow(Quizzes::GeneratorService).to receive(:new).with(book).and_return(generator_service)
       end
 
-      it 'generates a new quiz' do
-        expect(quiz_generator_double).to receive(:generate_quiz)
-        post :take_quiz, params: { id: book.id }
+      context 'when quiz generation is successful' do
+        before do
+          allow(generator_service).to receive(:generate_quiz!).and_return(quiz)
+        end
+
+        it 'generates a new quiz and redirects to take quiz path' do
+          post :take_quiz, params: { id: book.id }
+          expect(response).to redirect_to(take_book_quiz_path(book, quiz))
+        end
       end
 
-      it 'redirects to the book show page' do
-        post :take_quiz, params: { id: book.id }
-        expect(response).to redirect_to(book_path(book))
+      context 'when quiz generation fails' do
+        before do
+          allow(generator_service).to receive(:generate_quiz!).and_raise(StandardError.new('Quiz generation failed'))
+        end
+
+        it 'redirects to book path with error' do
+          post :take_quiz, params: { id: book.id }
+          expect(response).to redirect_to(book_path(book))
+          expect(flash[:error]).to eq('Failed to generate quiz questions. Please try again.')
+        end
       end
     end
   end

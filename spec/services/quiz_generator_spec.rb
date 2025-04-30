@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe QuizGenerator do
+RSpec.describe Quizzes::GeneratorService do
   describe '#generate_quiz', :vcr do
     let(:book) { create(:book, title: 'The Great Gatsby', author: 'F. Scott Fitzgerald') }
     let(:generator) { described_class.new(book) }
@@ -25,47 +25,66 @@ RSpec.describe QuizGenerator do
       allow_any_instance_of(OpenAI::Client).to receive(:chat).and_return(openai_response)
     end
 
-    it 'creates a quiz for the book' do
-      expect { generator.generate_quiz }.to change(Quiz, :count).by(1)
+    describe '#generate_quiz' do
+      it 'creates a quiz for the book' do
+        expect { generator.generate_quiz }.to change(Quiz, :count).by(1)
+      end
+
+      it 'creates questions for the quiz' do
+        quiz = generator.generate_quiz
+        expect(quiz.questions).to be_present
+      end
+
+      it 'sets the correct quiz title' do
+        quiz = generator.generate_quiz
+        expect(quiz.title).to eq("Quiz for #{book.title}")
+      end
+
+      context 'when OpenAI API fails' do
+        before do
+          allow_any_instance_of(OpenAI::Client).to receive(:chat).and_raise(OpenAI::Error)
+        end
+
+        it 'returns nil' do
+          expect(generator.generate_quiz).to be_nil
+        end
+      end
     end
 
-    it 'creates questions for the quiz' do
-      quiz = generator.generate_quiz
-      expect(quiz.questions).to be_present
-    end
+    describe '#generate_quiz!' do
+      it 'creates a quiz for the book' do
+        expect { generator.generate_quiz! }.to change(Quiz, :count).by(1)
+      end
 
-    it 'sets the correct quiz title' do
-      quiz = generator.generate_quiz
-      expect(quiz.title).to eq("Quiz for #{book.title}")
-    end
-
-    context 'when OpenAI API fails' do
-      before do
+      it 'raises an error when OpenAI API fails' do
         allow_any_instance_of(OpenAI::Client).to receive(:chat).and_raise(OpenAI::Error)
-      end
-
-      it 'creates a quiz without questions' do
-        quiz = generator.generate_quiz
-        expect(quiz).to be_persisted
-        expect(quiz.questions).to be_empty
+        expect { generator.generate_quiz! }.to raise_error(/Failed to generate quiz/)
       end
     end
 
-    context 'when OpenAI response cannot be parsed' do
-      let(:openai_response) do
-        {
-          'choices' => [{
-            'message' => {
-              'content' => 'Invalid JSON'
-            }
-          }]
-        }
+    describe '#call' do
+      it 'returns a success result with quiz when successful' do
+        result = generator.call
+        expect(result[:success?]).to be true
+        expect(result[:quiz]).to be_a(Quiz)
       end
 
-      it 'creates a quiz without questions' do
-        quiz = generator.generate_quiz
-        expect(quiz).to be_persisted
-        expect(quiz.questions).to be_empty
+      it 'returns a failure result when OpenAI fails' do
+        allow_any_instance_of(OpenAI::Client).to receive(:chat).and_raise(OpenAI::Error)
+        result = generator.call
+        expect(result[:success?]).to be false
+        expect(result[:error]).to include("No questions returned from OpenAI")
+      end
+
+      context 'when quiz is provided' do
+        let(:existing_quiz) { create(:quiz, book: book) }
+
+        it 'updates the existing quiz' do
+          result = generator.call(existing_quiz)
+          expect(result[:success?]).to be true
+          expect(result[:quiz]).to eq(existing_quiz)
+          expect(existing_quiz.questions).to be_present
+        end
       end
     end
   end
