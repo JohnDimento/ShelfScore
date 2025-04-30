@@ -44,6 +44,14 @@
       <div id="google-books-success" class="hidden">
         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
           <p class="text-green-800 text-center"></p>
+          <div class="mt-4 flex justify-center">
+            <button
+              id="generate-quiz-btn"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Generate Quiz
+            </button>
+          </div>
         </div>
       </div>
 
@@ -94,10 +102,10 @@ async function searchGoogleBooks() {
             <p class="text-gray-600">${book.author}</p>
             <p class="text-sm text-gray-500 line-clamp-2 mt-1">${book.description || ''}</p>
             <button
-              onclick="importBookAndGenerateQuiz('${book.id}')"
+              onclick="importBook('${book.id}')"
               class="mt-2 px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
             >
-              Import & Generate Quiz
+              Import Book
             </button>
           </div>
         `;
@@ -115,7 +123,7 @@ async function searchGoogleBooks() {
   }
 }
 
-async function importBookAndGenerateQuiz(googleBooksId) {
+async function importBook(googleBooksId) {
   const errorDiv = document.getElementById('google-books-error');
   const successDiv = document.getElementById('google-books-success');
   const loadingDiv = document.getElementById('google-books-loading');
@@ -129,34 +137,17 @@ async function importBookAndGenerateQuiz(googleBooksId) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-        'Accept': 'application/json'
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
       },
-      body: JSON.stringify({ google_books_id: googleBooksId }),
-      credentials: 'same-origin'
+      body: JSON.stringify({ google_books_id: googleBooksId })
     });
 
     const data = await response.json();
 
-    if (response.ok) {
-      // If quiz was generated successfully, redirect to take the quiz
-      if (data.quiz) {
-        successDiv.classList.remove('hidden');
-        successDiv.querySelector('p').textContent = 'Book imported and quiz generated! Taking you to the quiz...';
-        setTimeout(() => {
-          window.location.href = `/books/${data.book.id}/quizzes/${data.quiz.id}/take`;
-        }, 1000);
-      } else {
-        // If quiz wasn't generated, show error and redirect to book page
-        successDiv.classList.remove('hidden');
-        successDiv.querySelector('p').textContent = 'Book imported successfully! Redirecting to book page...';
-        setTimeout(() => {
-          window.location.href = `/books/${data.book.id}`;
-        }, 1000);
-      }
-    } else if (response.status === 401) {
-      // Unauthorized - redirect to login
-      window.location.href = '/users/sign_in';
+    if (response.ok || response.status === 206) {
+      importedBookId = data.book.id;
+      successDiv.classList.remove('hidden');
+      successDiv.querySelector('p').textContent = 'Book imported successfully! Click "Generate Quiz" to create a quiz for this book.';
     } else {
       errorDiv.classList.remove('hidden');
       errorDiv.querySelector('p').textContent = data.error || 'Failed to import book';
@@ -168,4 +159,57 @@ async function importBookAndGenerateQuiz(googleBooksId) {
     loadingDiv.classList.add('hidden');
   }
 }
+
+async function generateQuiz() {
+  if (!importedBookId) return;
+
+  const errorDiv = document.getElementById('google-books-error');
+  const successDiv = document.getElementById('google-books-success');
+  const loadingDiv = document.getElementById('google-books-loading');
+  const generateQuizBtn = document.getElementById('generate-quiz-btn');
+
+  loadingDiv.classList.remove('hidden');
+  errorDiv.classList.add('hidden');
+  generateQuizBtn.disabled = true;
+
+  try {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    const response = await fetch(`/books/${importedBookId}/take_quiz`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
+        'Accept': 'application/json'
+      },
+      credentials: 'same-origin'
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        // Unauthorized - redirect to login
+        window.location.href = '/users/sign_in';
+        return;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    successDiv.classList.remove('hidden');
+    successDiv.querySelector('p').textContent = 'Quiz generated successfully! Taking you to the quiz...';
+
+    // Redirect to the quiz taking page
+    window.location.href = `/books/${importedBookId}/quizzes/${data.quiz_id}/take`;
+  } catch (error) {
+    console.error('Quiz generation error:', error);
+    errorDiv.classList.remove('hidden');
+    errorDiv.querySelector('p').textContent = 'Failed to generate quiz. Please try again.';
+    generateQuizBtn.disabled = false;
+  } finally {
+    loadingDiv.classList.add('hidden');
+  }
+}
+
+// Add click handler for the Generate Quiz button
+document.getElementById('generate-quiz-btn').addEventListener('click', generateQuiz);
 </script>
