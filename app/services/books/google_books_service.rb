@@ -8,14 +8,22 @@ module Books
   class GoogleBooksService < Base::Service
     include ActionView::Helpers::SanitizeHelper
 
+    MAX_RESULTS_PER_PAGE = 40 # Google Books API maximum
+
     def initialize
       @books = Google::Apis::BooksV1::BooksService.new
       @books.key = ENV['GOOGLE_BOOKS_API_KEY']
     end
 
-    def search(query, max_results: 10)
-      result = @books.list_volumes(query, max_results: max_results)
-      success(books: result.items || [])
+    def search(query, max_results: 40, start_index: 0)
+      result = @books.list_volumes(
+        query,
+        max_results: [max_results, MAX_RESULTS_PER_PAGE].min,
+        start_index: start_index,
+        order_by: 'relevance',
+        fields: 'items(id,volumeInfo),totalItems'
+      )
+      success(books: result.items || [], total_items: result.total_items)
     rescue Google::Apis::Error => e
       failure("Google Books API search error: #{e.message}")
     end
@@ -45,12 +53,20 @@ module Books
       end
     end
 
-    def import_books_by_query(query, max_results: 10)
-      search_result = search(query, max_results: max_results)
+    def import_books_by_query(query, max_results: 40, start_index: 0)
+      search_result = search(query, max_results: max_results, start_index: start_index)
       return search_result unless search_result[:success?]
 
-      imported_books = search_result[:books].map { |volume| import_book(volume.id) }
-      success(books: imported_books.select { |result| result[:success?] }.map { |result| result[:book] })
+      imported_books = search_result[:books].map do |volume|
+        # Skip if we already have this book
+        next if Book.exists?(google_books_id: volume.id)
+        import_book(volume.id)
+      end.compact
+
+      success(
+        books: imported_books.select { |result| result[:success?] }.map { |result| result[:book] },
+        total_items: search_result[:total_items]
+      )
     end
 
     private

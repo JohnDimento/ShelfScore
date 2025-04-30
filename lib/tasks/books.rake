@@ -89,4 +89,95 @@ namespace :books do
       end
     end
   end
+
+  desc 'Bulk import large number of books from Google Books API'
+  task bulk_import: :environment do
+    service = Books::GoogleBooksService.new
+    total_imported = 0
+
+    # Comprehensive genre and category queries
+    categories = {
+      'Fiction' => [
+        'fiction', 'novels', 'contemporary fiction', 'literary fiction',
+        'mystery', 'thriller', 'romance', 'science fiction', 'fantasy',
+        'historical fiction', 'horror', 'adventure', 'classics'
+      ],
+      'Non-Fiction' => [
+        'non-fiction', 'biography', 'history', 'science', 'philosophy',
+        'psychology', 'business', 'self-help', 'travel', 'cooking',
+        'art', 'technology', 'politics', 'economics'
+      ],
+      'Academic' => [
+        'textbook', 'academic', 'research', 'education', 'mathematics',
+        'physics', 'chemistry', 'biology', 'engineering', 'computer science'
+      ],
+      'Children & Young Adult' => [
+        'children books', 'young adult', 'middle grade', 'picture books',
+        'teen fiction', 'juvenile literature'
+      ]
+    }
+
+    # Track progress
+    total_queries = categories.values.flatten.size
+    current_query = 0
+
+    categories.each do |category, queries|
+      puts "\nStarting category: #{category}"
+
+      queries.each do |query|
+        current_query += 1
+        puts "\nProcessing query #{current_query}/#{total_queries}: #{query}"
+
+        # Try to get multiple pages of results
+        start_index = 0
+        books_found = true
+        retries = 0
+        max_retries = 3
+
+        while books_found && start_index < 1000 # Google Books API limit
+          begin
+            puts "Fetching results starting at index #{start_index}..."
+
+            # Get maximum allowed books per request (40 is Google Books API max)
+            books = service.import_books_by_query(
+              query,
+              max_results: 40,
+              start_index: start_index
+            )
+
+            if books.any?
+              total_imported += books.count
+              puts "Imported #{books.count} books (Total: #{total_imported})"
+              start_index += books.count
+
+              # Small delay to avoid rate limiting
+              sleep 3
+            else
+              books_found = false
+            end
+
+            retries = 0
+          rescue => e
+            retries += 1
+            if retries <= max_retries
+              puts "Error occurred: #{e.message}. Retry #{retries}/#{max_retries}..."
+              sleep 30 * retries # Exponential backoff
+              retry
+            else
+              puts "Failed after #{max_retries} retries, moving to next query"
+              break
+            end
+          end
+        end
+
+        # Brief pause between queries
+        sleep 5
+      end
+    end
+
+    puts "\nBulk import completed!"
+    puts "Total books imported: #{total_imported}"
+    puts "\nRunning description cleanup..."
+    Rake::Task["books:clean_descriptions"].invoke
+  end
 end
