@@ -106,4 +106,10 @@ class BooksController < ApplicationController
       render json: { error: result[:error] }, status: :unprocessable_entity
     end
   end
+
+  private
+
+  def set_book
+    @book = Book.find(params[:id])
+  end
 end
