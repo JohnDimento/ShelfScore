@@ -14,17 +14,17 @@
             <%# Books container %>
             <div class="flex justify-center items-start relative z-10">
               <% row_books.each do |book| %>
-                <div class="w-[152px] flex justify-center">
+                <div class="w-[200px] flex justify-center">
                   <%= render "books/bookshelf/book", book: book %>
                 </div>
               <% end %>
 
               <%# Fill remaining slots with empty placeholders %>
               <% (3 - row_books.length).times do %>
-                <div class="w-[152px] flex justify-center">
-                  <div class="w-[120px] h-[180px] bg-slate-50 rounded shadow-sm border border-slate-200/50 overflow-hidden relative group">
+                <div class="w-[200px] flex justify-center">
+                  <div class="w-[160px] h-[240px] bg-slate-50 rounded shadow-sm border border-slate-200/50 overflow-hidden relative group">
                     <div class="absolute inset-0 flex items-center justify-center">
-                      <svg class="w-8 h-8 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg class="w-12 h-12 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                       </svg>
                     </div>
@@ -34,7 +34,7 @@
             </div>
 
             <%# Shelf background - positioned below books %>
-            <div class="absolute bottom-0 left-0 right-0 mx-auto w-[90%] z-0">
+            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[600px] z-0">
               <div class="h-3 bg-gradient-to-r from-slate-700/10 via-slate-700/20 to-slate-700/10 rounded-lg shadow-lg"></div>
             </div>
           </div>
