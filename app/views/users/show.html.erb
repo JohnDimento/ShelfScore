@@ -63,20 +63,28 @@
 
   <!-- Recent Books -->
   <div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h2 class="text-xl font-semibold text-slate-800 mb-4">Recently Read</h2>
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      <% @recent_books.each do |book| %>
-        <div class="relative group">
-          <%= image_tag book.thumbnail_url, class: "w-full aspect-[2/3] object-cover rounded-lg shadow-sm" %>
-          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity rounded-lg flex items-center justify-center">
-            <div class="opacity-0 group-hover:opacity-100 transition-opacity text-white text-center p-2">
-              <p class="font-medium"><%= book.title %></p>
-              <p class="text-sm"><%= book.author %></p>
+    <h2 class="text-xl font-semibold text-slate-800 mb-4">My Bookshelf</h2>
+    <% if @recent_books.any? %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <% @recent_books.each do |book| %>
+          <div class="relative group aspect-[2/3]">
+            <%= image_tag book.thumbnail_url, class: "w-full h-full object-cover rounded-lg shadow-sm" %>
+            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity rounded-lg flex items-center justify-center">
+              <div class="opacity-0 group-hover:opacity-100 transition-opacity text-white text-center p-4">
+                <p class="font-medium line-clamp-2"><%= book.title %></p>
+                <p class="text-sm mt-1"><%= book.author %></p>
+                <p class="text-xs mt-2"><%= book.page_count %> pages</p>
+              </div>
             </div>
           </div>
-        </div>
-      <% end %>
-    </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-8 text-slate-600">
+        <p>No books in your bookshelf yet.</p>
+        <p class="text-sm mt-2">Complete quizzes with a score of 70% or higher to add books to your shelf!</p>
+      </div>
+    <% end %>
   </div>
 
   <!-- Recent Quiz Results -->

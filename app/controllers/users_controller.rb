@@ -3,7 +3,7 @@ class UsersController < ApplicationController
   before_action :set_user, only: [:show, :edit, :update]
 
   def show
-    @recent_books = Book.in_bookshelf(@user).limit(6)
+    @recent_books = Book.in_bookshelf(@user).order(created_at: :desc)
     @quiz_attempts = @user.quiz_attempts.order(created_at: :desc).limit(5)
     @total_books = Book.in_bookshelf(@user).count
     @total_quizzes = @user.quiz_attempts.count
