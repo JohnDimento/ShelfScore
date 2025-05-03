@@ -4,5 +4,7 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
-  has_many :quiz_attempts, dependent: :destroy
+  has_many :quiz_attempts
+  has_many :quizzes, through: :quiz_attempts
+  has_many :books, through: :quizzes
 end

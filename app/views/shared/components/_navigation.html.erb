@@ -49,7 +49,7 @@
                  class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white
                         ring-1 ring-black ring-opacity-5">
               <div class="px-2 py-2 flex justify-between">
-                <%= link_to "Profile", edit_user_registration_path,
+                <%= link_to "Profile", user_path(current_user),
                              class: "px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-md" %>
                 <%= button_to "Sign out", destroy_user_session_path, method: :delete,
                               class: "px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-md" %>
@@ -88,7 +88,7 @@
     const menu = document.getElementById("mobile-menu");
     if (!btn || !menu) return;
 
-    // Make sure we don’t bind twice
+    // Make sure we don't bind twice
     btn.replaceWith(btn.cloneNode(true));
     const freshBtn = document.getElementById("mobile-menu-btn");
     freshBtn.addEventListener("click", () => {

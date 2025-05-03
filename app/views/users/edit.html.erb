@@ -1,0 +1,76 @@
+<div class="max-w-3xl mx-auto px-4 py-8">
+  <div class="bg-white rounded-lg shadow p-6">
+    <h1 class="text-2xl font-bold text-slate-800 mb-6">Edit Profile</h1>
+
+    <%= form_with(model: @user, local: true) do |f| %>
+      <!-- Basic Info -->
+      <div class="space-y-6 mb-8">
+        <h2 class="text-lg font-semibold text-slate-800">Basic Information</h2>
+
+        <div>
+          <%= f.label :display_name, class: "block text-sm font-medium text-slate-700" %>
+          <%= f.text_field :display_name, class: "mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500" %>
+        </div>
+
+        <div>
+          <%= f.label :bio, class: "block text-sm font-medium text-slate-700" %>
+          <%= f.text_area :bio, rows: 3, class: "mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500" %>
+        </div>
+
+        <div>
+          <%= f.label :avatar_url, "Avatar URL", class: "block text-sm font-medium text-slate-700" %>
+          <%= f.text_field :avatar_url, class: "mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500" %>
+        </div>
+      </div>
+
+      <!-- Reading Goals -->
+      <div class="space-y-6 mb-8">
+        <h2 class="text-lg font-semibold text-slate-800">Reading Goals</h2>
+
+        <div>
+          <%= f.label :reading_goal, "Annual Reading Goal", class: "block text-sm font-medium text-slate-700" %>
+          <%= f.number_field :reading_goal, class: "mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500" %>
+        </div>
+      </div>
+
+      <!-- Preferences -->
+      <div class="space-y-6 mb-8">
+        <h2 class="text-lg font-semibold text-slate-800">Preferences</h2>
+
+        <div>
+          <%= f.label :theme_preference, "Theme", class: "block text-sm font-medium text-slate-700" %>
+          <%= f.select :theme_preference,
+              [["Light", "light"], ["Dark", "dark"], ["System", "system"]],
+              {},
+              class: "mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500" %>
+        </div>
+      </div>
+
+      <!-- Privacy Settings -->
+      <div class="space-y-6 mb-8">
+        <h2 class="text-lg font-semibold text-slate-800">Privacy Settings</h2>
+
+        <div class="space-y-4">
+          <div class="flex items-center">
+            <%= f.check_box :privacy_settings, { multiple: true, checked: @user.privacy_settings&.dig("show_quiz_scores") != false }, "true", "false" %>
+            <%= f.label :privacy_settings, "Show quiz scores on profile", class: "ml-2 block text-sm text-slate-700" %>
+          </div>
+
+          <div class="flex items-center">
+            <%= f.check_box :privacy_settings, { multiple: true, checked: @user.privacy_settings&.dig("show_bookshelf") != false }, "true", "false" %>
+            <%= f.label :privacy_settings, "Show bookshelf on profile", class: "ml-2 block text-sm text-slate-700" %>
+          </div>
+
+          <div class="flex items-center">
+            <%= f.check_box :privacy_settings, { multiple: true, checked: @user.privacy_settings&.dig("show_activity") != false }, "true", "false" %>
+            <%= f.label :privacy_settings, "Show reading activity", class: "ml-2 block text-sm text-slate-700" %>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <%= f.submit "Save Changes", class: "bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700" %>
+      </div>
+    <% end %>
+  </div>
+</div>
