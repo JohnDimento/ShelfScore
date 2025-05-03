@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_29_004032) do
+ActiveRecord::Schema[7.1].define(version: 2025_05_03_071935) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -31,9 +31,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_29_004032) do
     t.integer "ratings_count"
     t.string "thumbnail_url"
     t.string "preview_link"
+    t.bigint "user_id", null: false
     t.index ["google_books_id"], name: "index_books_on_google_books_id", unique: true
     t.index ["isbn_10"], name: "index_books_on_isbn_10"
     t.index ["isbn_13"], name: "index_books_on_isbn_13"
+    t.index ["user_id"], name: "index_books_on_user_id"
   end
 
   create_table "questions", force: :cascade do |t|
@@ -75,10 +77,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_29_004032) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "points", default: 0
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "books", "users"
   add_foreign_key "questions", "quizzes"
   add_foreign_key "quiz_attempts", "quizzes"
   add_foreign_key "quiz_attempts", "users"

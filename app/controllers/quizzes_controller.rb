@@ -69,11 +69,14 @@ class QuizzesController < ApplicationController
     )
 
     if @quiz_attempt.save
-      flash[:notice] = if @quiz_attempt.successful?
-                        "Congratulations! You scored #{@score_percentage}% and this book will be added to your bookshelf!"
-                      else
-                        "You scored #{@score_percentage}%. You need at least 70% for this book to be added to your bookshelf. Try again next month!"
-                      end
+      if @quiz_attempt.successful?
+        # Calculate and award points
+        points = (@book.page_count.to_f / 10).round
+        current_user.increment!(:points, points)
+        flash[:notice] = "Congratulations! You scored #{@score_percentage}% and earned #{points} points! This book will be added to your bookshelf!"
+      else
+        flash[:notice] = "You scored #{@score_percentage}%. You need at least 70% for this book to be added to your bookshelf. Try again next month!"
+      end
     else
       flash[:alert] = "Failed to record quiz attempt. #{@quiz_attempt.errors.full_messages.join(', ')}"
     end
