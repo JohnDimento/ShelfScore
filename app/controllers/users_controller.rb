@@ -3,9 +3,12 @@ class UsersController < ApplicationController
   before_action :set_user, only: [:show, :edit, :update]
 
   def show
-    @recent_books = Book.in_bookshelf(@user).order(created_at: :desc)
+    @recent_books = Book.joins(quizzes: :quiz_attempts)
+                       .where(quiz_attempts: { user: @user, score: 70..100 })
+                       .select('DISTINCT books.*')
+                       .order('books.created_at DESC')
     @quiz_attempts = @user.quiz_attempts.order(created_at: :desc).limit(5)
-    @total_books = Book.in_bookshelf(@user).count
+    @total_books = @recent_books.count
     @total_quizzes = @user.quiz_attempts.count
     @average_score = @user.quiz_attempts.average(:score)&.round(2) || 0
   end
