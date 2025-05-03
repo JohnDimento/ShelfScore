@@ -81,10 +81,11 @@ module Quizzes
 
     def generate_prompt
       <<~PROMPT
-        You are a literature expert. Generate a quiz about this book that tests deep understanding of the story.
-        Focus on character development, major plot points, themes, and literary devices.
-        Avoid questions about basic facts like the title or author.
-
+        You are a literature expert. Generate a quiz that checks overall understanding of the book’s:
+        - Setting (time/place)
+        - Main conflict and resolution
+        - Sequence of major events
+        - Key characters and their roles
         For each question:
         - Make it thought-provoking and require understanding of the story
         - Focus on character motivations, relationships, and development
