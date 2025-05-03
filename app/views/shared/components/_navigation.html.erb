@@ -1,19 +1,19 @@
 <header class="border-b border-slate-200/50 bg-white/50 backdrop-blur-sm">
-  <nav class="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
-    <%= link_to root_path, class: "flex items-center gap-2" do %>
+  <nav class="mx-auto max-w-7xl px-4 py-4 flex items-center">
+    <%= link_to root_path, class: "flex items-center gap-2 flex-none" do %>
       <svg class="w-6 h-6 text-slate-800" fill="currentColor" viewBox="0 0 20 20">
         <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
       </svg>
       <span class="text-xl font-semibold text-slate-800">ShelfScore</span>
     <% end %>
 
-    <div class="flex items-center gap-8">
+    <div class="flex items-center gap-8 flex-grow justify-center">
       <%= link_to "Bookshelf", bookshelf_books_path, class: "text-slate-600 hover:text-slate-900" %>
       <%= link_to "Explore", "#", class: "text-slate-600 hover:text-slate-900" %>
       <%= link_to "Leaderboard", "#", class: "text-slate-600 hover:text-slate-900" %>
     </div>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-4 flex-none">
       <% if user_signed_in? %>
         <div class="relative" data-controller="dropdown">
           <button data-action="click->dropdown#toggle" class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
